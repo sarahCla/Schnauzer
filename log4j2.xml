@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+  <appender name="console" class="org.apache.log4j.ConsoleAppender">
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss,SSS} [%c]-[%p] %m%n" />
+    </layout>
+  </appender>
+	<appender name="Schnauzer.file.log" class="org.apache.log4j.RollingFileAppender">
+    <param name="File" value="Schnauzer.log" />
+    <param name="Append" value="false" />
+    <layout class="org.apache.log4j.PatternLayout">
+      <param name="ConversionPattern" value="%d [%t] %p - %m%n" />
+    </layout>
+  </appender>  
+  <root>
+    <level value="INFO"/>
+    <appender-ref ref="console"/>
+    <appender-ref ref="Schnauzer.file.log"/>
+  </root>
+  <category name="com.google.code.or">
+   <priority value="INFO"/>
+   <appender-ref ref="console"/>
+   <appender-ref ref="Schnauzer.file.log"/>
+	</category>  	
+  <category name="com.sarah">
+   <priority value="INFO"/>
+   <appender-ref ref="console"/>
+   <appender-ref ref="Schnauzer.file.log"/>
+	</category>  	
+</log4j:configuration>
+

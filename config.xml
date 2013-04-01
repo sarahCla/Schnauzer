@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Schnauzer>
+<MasterDBInfo Host="127.0.0.1" port="3306" user="root" pwd="xxxx" dbname="test" serverid="1"/>
+<SlaveDBInfo Host="127.0.0.1"  port="3306" user="root" pwd="xxxx" dbname="test3" type="mysql" SerailNo="75EA" MasterID="3"/>
+<HeartBeat Host="192.168.12.162" port="60002" Interval="600000" />
+<WarmingSendMailList>
+        <Mail>yifei.wang@163.com</Mail> 
+</WarmingSendMailList>
+<RepTableList> 
+	<Table MasterTable="TT2" SlaveTable="TT2" KeyField="id"  heterogeneous="false" mergedTable="true"/>
+</RepTableList>
+</Schnauzer>
