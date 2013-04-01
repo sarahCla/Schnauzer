@@ -37,8 +37,8 @@ public class SqlServerDbHelper extends AbstractDbHelper {
 		this.conConfig.driver = dbConfig.driver; 
 	}
 
-	public SqlServerDbHelper(String host, int port, String user, String pwd, String dbname, String instanceName) {
-		super(host, port, user, pwd, dbname, "com.microsoft.sqlserver.jdbc.SQLServerDriver", instanceName);
+	public SqlServerDbHelper(String host, int port, String user, String pwd, String dbname) {
+		super(host, port, user, pwd, dbname, "com.microsoft.sqlserver.jdbc.SQLServerDriver");
 	}
 
 

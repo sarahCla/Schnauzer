@@ -21,8 +21,8 @@ public class MySQLDbHelper extends AbstractDbHelper {
 		super(dbConfig);
 	}
 
-	public MySQLDbHelper(String host, int port, String user, String pwd, String dbname, String instanceName) {
-		super(host, port, user, pwd, dbname, "", "");
+	public MySQLDbHelper(String host, int port, String user, String pwd, String dbname) {
+		super(host, port, user, pwd, dbname, "");
 	}
 
 

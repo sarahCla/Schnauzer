@@ -1,0 +1,12 @@
+13-04-01 16:38:47 [INFO ] com.sarah.SchnauzerRunner {SchnauzerRunner.java:82} - 系统信息：LocalInfo[isWindows=true,isLinux=false,HdType=<null>,硬盘序列号=,序列号=]
+13-04-01 16:38:47 [INFO ] com.sarah.Schnauzer.helper.ConfigGetHelper {ConfigGetHelper.java:76} - 注册了1个报警邮件
+13-04-01 16:38:47 [INFO ] com.sarah.Schnauzer.helper.ConfigGetHelper {ConfigGetHelper.java:77} - log test 注册了1个报警邮件
+13-04-01 16:42:51 [INFO ] com.sarah.SchnauzerRunner {SchnauzerRunner.java:82} - 系统信息：LocalInfo[isWindows=true,isLinux=false,HdType=<null>,硬盘序列号=,序列号=]
+13-04-01 16:42:51 [INFO ] com.sarah.Schnauzer.helper.ConfigGetHelper {ConfigGetHelper.java:184} - 获取数据库配置MasterDBInfo成功
+13-04-01 16:42:51 [INFO ] com.sarah.Schnauzer.helper.ConfigGetHelper {ConfigGetHelper.java:76} - 注册了1个报警邮件
+13-04-01 16:45:38 [INFO ] com.sarah.SchnauzerRunner {SchnauzerRunner.java:82} - 系统信息：LocalInfo[isWindows=true,isLinux=false,HdType=<null>,硬盘序列号=,序列号=]
+13-04-01 16:45:38 [INFO ] com.sarah.Schnauzer.helper.ConfigGetHelper {ConfigGetHelper.java:185} - 获取数据库配置MasterDBInfo成功
+13-04-01 16:45:38 [INFO ] com.sarah.Schnauzer.helper.ConfigGetHelper {ConfigGetHelper.java:147} - 获取数据库配置SlaveDBInfo成功
+13-04-01 16:45:39 [ERROR] com.sarah.Schnauzer.helper.DB.AbstractDbHelper {AbstractDbHelper.java:60} - 数据库连接失败2[jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&amp;autoReconnect=true]Access denied for user 'root'@'localhost' (using password: YES)
+13-04-01 16:45:39 [ERROR] com.sarah.SchnauzerRunner {SchnauzerRunner.java:121} - catch an Exception {}java.lang.Exception: 连接Master数据库失败
+13-04-01 16:45:39 [INFO ] com.sarah.SchnauzerRunner {SchnauzerRunner.java:138} - 遇到问题，等待5分钟后重连

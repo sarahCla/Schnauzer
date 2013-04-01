@@ -28,7 +28,7 @@ import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.listener.master.IMaster;
-import com.sarah.Schnauzer.listener.master.Impl.SchnauzerMaster;
+import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRDBMaster;
 
 /**
  * 
@@ -43,7 +43,7 @@ public class ClientTableListener implements BinlogEventListener {
 	
 	public ClientTableListener(DBConnectorConfig masterdb, DBConnectorConfig slavedb) 
 	{
-		this.slave = new SchnauzerMaster(masterdb, slavedb);
+		this.slave = new SchnauzerRDBMaster(masterdb, slavedb);
 		helper.dateFormatStr = masterdb.DateFormat;
 	}
 	

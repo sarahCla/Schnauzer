@@ -31,7 +31,6 @@ public class DBConnectorConfig {
 	public String dbname = "";
 	private String type = "";
 	public String driver = "";
-	public String instanceName = "";
 	public String DateFormat = "";
 	public int waittime = 28800;
 	
@@ -96,14 +95,13 @@ public class DBConnectorConfig {
 	}
 	
 	
-	public DBConnectorConfig(String host, int port, String user, String pwd, String dbname, String type, String instanceName) {
+	public DBConnectorConfig(String host, int port, String user, String pwd, String dbname, String type) {
 		this.host = host;
 		this.port = port;
 		this.user = user;
 		this.pwd = pwd;
 		this.dbname = dbname;
 		this.type = type;
-		this.instanceName = instanceName;
 		if (type.equalsIgnoreCase("MySql")) {
 			this.driver = "";
 			this.fieldTag[0] = "`";
@@ -128,7 +126,6 @@ public class DBConnectorConfig {
 			return "jdbc:sqlserver://" + this.host + ":" + this.port + ";DatabaseName=" + this.dbname;
 		}
 		else if (this.type.equalsIgnoreCase("MySql")) {
-			//return "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.dbname + "?useUnicode=true&amp;characterEncoding=UTF-8"; autoReconnect=true
 			return "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.dbname + "?useUnicode=true&amp;autoReconnect=true";
 		}
 		else if (this.type.equalsIgnoreCase("SqlServer2000"))

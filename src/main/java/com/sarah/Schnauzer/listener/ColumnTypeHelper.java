@@ -31,7 +31,7 @@ import com.google.code.or.common.glossary.column.BitColumn;
 import com.google.code.or.common.glossary.column.StringColumn;
 import com.google.code.or.common.util.MySQLConstants;
 import com.sarah.Schnauzer.helper.WarmingMailHelper;
-import com.sarah.Schnauzer.listener.TableReplicator.Impl.RepField;
+import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 import com.sarah.tools.type.TypeTransfer;
 
 /**

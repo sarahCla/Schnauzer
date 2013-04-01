@@ -27,15 +27,7 @@ import com.sarah.Schnauzer.listener.ColumnTypeHelper;
  * @author SarahCla
  */
 public interface IMaster {
-	/*
-	public String getHost();
-	public int getPort();
-	public String getUser();
-	public String getPassword();
-	*/
-
 	public boolean registgerTableReplicator(DBConnectorConfig master);
-	
 	public boolean doWrite(ColumnTypeHelper helper, WriteRowsEvent event);
 	public boolean doUpdate(ColumnTypeHelper helper, UpdateRowsEvent event);
 	public boolean doDelete(ColumnTypeHelper helper, DeleteRowsEvent event);

@@ -33,8 +33,8 @@ public abstract class AbstractDbHelper implements IDbHelper {
 	protected Connection conn;
 	public String[] fieldTag = new String[2];
 	
-	public AbstractDbHelper(String host, int port, String user, String pwd, String dbname, String driver, String instanceName) {
-		this.conConfig = new DBConnectorConfig(host, port, user, pwd, dbname, driver, instanceName);
+	public AbstractDbHelper(String host, int port, String user, String pwd, String dbname, String driver) {
+		this.conConfig = new DBConnectorConfig(host, port, user, pwd, dbname, driver);
 	}
 	
 	
