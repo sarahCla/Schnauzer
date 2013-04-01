@@ -16,27 +16,55 @@
  */
 package com.sarah.Schnauzer.listener.master;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.WarmingMailHelper;
+import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
+import com.sarah.Schnauzer.helper.DB.Redis.RedisSlaveDBHelper;
 import com.sarah.Schnauzer.listener.ColumnTypeHelper;
 
 /**
  * 
  * @author SarahCla
  */
-public interface IMaster {
-	/*
-	public String getHost();
-	public int getPort();
-	public String getUser();
-	public String getPassword();
-	*/
+public class AbstractRedisMaster  implements IMaster {
 
-	public boolean registgerTableReplicator(DBConnectorConfig master);
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRedisMaster.class);	
 	
-	public boolean doWrite(ColumnTypeHelper helper, WriteRowsEvent event);
-	public boolean doUpdate(ColumnTypeHelper helper, UpdateRowsEvent event);
-	public boolean doDelete(ColumnTypeHelper helper, DeleteRowsEvent event);
+	protected DBConnectorConfig slaveDb;	
+	protected DBConnectorConfig masterDb;
+	
+	private RedisSlaveDBHelper dbhelper;
+	private WarmingMailHelper mailsender;	
+
+
+	@Override
+	public boolean registgerTableReplicator(DBConnectorConfig master) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean doWrite(ColumnTypeHelper helper, WriteRowsEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean doUpdate(ColumnTypeHelper helper, UpdateRowsEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean doDelete(ColumnTypeHelper helper, DeleteRowsEvent event) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

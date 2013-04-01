@@ -16,5 +16,6 @@
 	<classpathentry kind="lib" path="lib/msbase.jar"/>
 	<classpathentry kind="lib" path="lib/mssqlserver.jar"/>
 	<classpathentry kind="lib" path="lib/msutil.jar"/>
+	<classpathentry kind="lib" path="lib/jedis-2.1.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

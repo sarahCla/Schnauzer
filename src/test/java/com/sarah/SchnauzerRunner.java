@@ -35,7 +35,9 @@ import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.helper.DB.SlaveHelperFactory;
+import com.sarah.Schnauzer.helper.DB.SlaveStatus;
 import com.sarah.Schnauzer.listener.ClientTableListener;
 
 
@@ -48,22 +50,18 @@ public class SchnauzerRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SchnauzerRunner.class);
 	
 
-	private static boolean iniRepStatus(DBConnectorConfig masterConfig, DBConnectorConfig slaveConfig, ResultSet rsSlave) throws SQLException 
-	{
-		rsSlave.next();
-		if (rsSlave.getRow()>=1) {
-			masterConfig.binlog = rsSlave.getString("binlog");
-			masterConfig.pos = rsSlave.getInt("pos");
-			slaveConfig.binlog = rsSlave.getString("binlog");
-			slaveConfig.pos = rsSlave.getInt("pos");
-			LOGGER.info("获取复制起始状态成功");
-		}
-		else {
-			LOGGER.error("masterID=" + slaveConfig.masterID + "对应的记录在RepStatus表中不存在");
-			return false;
-		}
+	private static boolean iniRepStatus(DBConnectorConfig masterConfig, DBConnectorConfig slaveConfig) throws Exception {
+		SlaveStatus rsSlave = (new SlaveHelperFactory(slaveConfig)).getSlaveStatus();
+		if (rsSlave==null)	throw new Exception("连接Slave数据库失败");
+
+		masterConfig.binlog = rsSlave.binlog;
+		masterConfig.pos = rsSlave.pos;
+		slaveConfig.binlog = rsSlave.binlog;
+		slaveConfig.pos = rsSlave.pos;
+		LOGGER.info("获取复制起始状态成功");
 		return true;
 	}
+	
 	
 	private static void iniHeartBeat(HeartBeatSender beatSender, DBConnectorConfig masterConfig, DBConnectorConfig slaveConfig, ConfigGetHelper conf, LocalInfo info) {
 		HeartBeatInfo hinfo = new HeartBeatInfo();
@@ -86,18 +84,14 @@ public class SchnauzerRunner {
 		{
 
 			ConfigGetHelper conf = new ConfigGetHelper();
-			if (!conf.getDBConfig(masterConfig, "MasterDBInfo")) System.exit(-1);
-			masterConfig.setType("MySql");
-			if (!conf.getDBConfig(slaveConfig, "SlaveDBInfo"))  System.exit(-1);
+
+			if (!conf.getDBConfig(masterConfig, Tags.MasterDB)) System.exit(-1);
+			if (!conf.getDBConfig(slaveConfig, Tags.SlaveDB))  System.exit(-1);
 
 			ResultSet rsMaster = (new SlaveHelperFactory(masterConfig)).getRS("select 1");
 			if (rsMaster==null)	throw new Exception("连接Master数据库失败");
 			
-			
-			ResultSet rsSlave = (new SlaveHelperFactory(slaveConfig)).getSlaveStatus();
-			if (rsSlave==null)	throw new Exception("连接Slave数据库失败");
-			if (!iniRepStatus(masterConfig, slaveConfig, rsSlave)) return;
-			
+			iniRepStatus(masterConfig, slaveConfig);
 			iniHeartBeat(beatSender, masterConfig, slaveConfig, conf, info);
 			
 			final OpenReplicator or = new OpenReplicator();

@@ -31,7 +31,7 @@ public class SlaveHelperFactory implements ISlaveDbHelper {
 	}
 
 	@Override
-	public ResultSet getSlaveStatus() {
+	public SlaveStatus getSlaveStatus() throws Exception {
 		return this.helper.getSlaveStatus();
 	}
 

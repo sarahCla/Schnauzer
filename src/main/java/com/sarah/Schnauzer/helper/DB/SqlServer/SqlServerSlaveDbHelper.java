@@ -6,6 +6,7 @@ import java.sql.*;
 
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
+import com.sarah.Schnauzer.helper.DB.SlaveStatus;
 
 /**
  * 
@@ -18,8 +19,18 @@ public class SqlServerSlaveDbHelper extends SqlServerDbHelper implements ISlaveD
 	}
 
 	@Override
-	public ResultSet getSlaveStatus() {
-		return getRS("select * from  RepStatus Where masterID=" + this.conConfig.masterID);
+	public SlaveStatus getSlaveStatus() {
+		SlaveStatus result = null;
+		ResultSet rt = getRS("select * from  RepStatus where masterID=" + this.conConfig.masterID); 
+		try {
+			rt.next();
+			if (rt.getRow()>=1) {
+				result = new SlaveStatus(rt.getString("binlog"), rt.getInt("pos"), conConfig.masterID);
+			} 
+		}catch(SQLException e) {
+			return null;
+		}
+		return result;
 	}
 
 	@Override

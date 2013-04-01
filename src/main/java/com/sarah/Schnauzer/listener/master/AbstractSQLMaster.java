@@ -34,6 +34,7 @@ import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.helper.WarmingMailHelper;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.SlaveHelperFactory;
@@ -48,9 +49,9 @@ import com.sarah.tools.localinfo.LocalInfoGetter;
  * 
  * @author SarahCla
  */
-public abstract class AbstractMaster implements IMaster {
+public abstract class AbstractSQLMaster implements IMaster {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMaster.class);	
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSQLMaster.class);	
 	
 	protected DBConnectorConfig slaveDb;	
 	protected DBConnectorConfig masterDb;
@@ -63,7 +64,7 @@ public abstract class AbstractMaster implements IMaster {
 	
 	protected List<ITableReplicator> tables = new CopyOnWriteArrayList<ITableReplicator>();
 	
-	public AbstractMaster(DBConnectorConfig master, DBConnectorConfig slave)
+	public AbstractSQLMaster(DBConnectorConfig master, DBConnectorConfig slave)
 	{
 		this.slaveDb = slave;
 		this.masterDb = master;
@@ -85,7 +86,7 @@ public abstract class AbstractMaster implements IMaster {
 			if ((sqls[i]==null)||(sqls[i].isEmpty())) continue;
 			msg += sqls[i] + "<br>";
 		}
-		msg += "【错误类型】" + "<br>" + errInfo[0] + "<br>" + "Version 1.0.0.51"; 
+		msg += "【错误类型】" + "<br>" + errInfo[0] + "<br>" + "Version " + Tags.version; 
 		msg += "<br>";
 		msg += "【配置状况】" + "<br>Slave类型：" + this.slaveDb.getType() +
 				"<br>Slave: " + this.slaveDb.host +

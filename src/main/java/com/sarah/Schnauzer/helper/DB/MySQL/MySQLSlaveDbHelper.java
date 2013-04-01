@@ -18,8 +18,14 @@ package com.sarah.Schnauzer.helper.DB.MySQL;
 
 import java.sql.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Tags;
+import com.sarah.Schnauzer.helper.DB.AbstractDbHelper;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
+import com.sarah.Schnauzer.helper.DB.SlaveStatus;
 
 /**
  * 
@@ -27,13 +33,27 @@ import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
  */
 public class MySQLSlaveDbHelper extends MySQLDbHelper implements ISlaveDbHelper {
 	
+	private static final Logger LOGGER = LoggerFactory.getLogger(MySQLSlaveDbHelper.class);
+	
 	public MySQLSlaveDbHelper(DBConnectorConfig dbConfig) {
 		super(dbConfig);
 	}
 
 	@Override
-	public ResultSet getSlaveStatus() {
-		return getRS("select * from  RepStatus where masterID=" + this.conConfig.masterID);
+	public SlaveStatus getSlaveStatus() throws Exception{
+		SlaveStatus result = null;
+		ResultSet rt = getRS("select * from  " + Tags.repTable + " where masterID=" + this.conConfig.masterID); 
+		try {
+			rt.next();
+			if (rt.getRow()>=1) {
+				result = new SlaveStatus(rt.getString(Tags.binlog), rt.getInt(Tags.pos), conConfig.masterID);
+			} 
+		}catch(SQLException e) {
+			String err = "masterID=" + conConfig.masterID + "对应的记录在" + Tags.repTable +"表中不存在";
+			LOGGER.error(err);
+			throw new Exception(err);
+		}
+		return result;
 	}
 
 	@Override

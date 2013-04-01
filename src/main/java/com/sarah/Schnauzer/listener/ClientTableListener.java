@@ -68,21 +68,23 @@ public class ClientTableListener implements BinlogEventListener {
 	@Override
 	public void onEvents(BinlogEventV4 event) {
 		int type = event.getHeader().getEventType(); 
-    	if (type==MySQLConstants.TABLE_MAP_EVENT) {
-    		setHelper(helper, (TableMapEvent)event);
-    		
-    	} else if (type==MySQLConstants.WRITE_ROWS_EVENT) {
-    		if (!slave.doWrite(helper, (WriteRowsEvent)event)) 
-    			System.exit(-1);
-    	} else if (type==MySQLConstants.DELETE_ROWS_EVENT) {
-    		if (!slave.doDelete(helper, (DeleteRowsEvent)event))
-    			System.exit(-1);
-    	} else if (type==MySQLConstants.UPDATE_ROWS_EVENT) {
-    		if (!slave.doUpdate(helper,  (UpdateRowsEvent)event))
-    			System.exit(-1);
-    	} else if (type==MySQLConstants.ROTATE_EVENT) {
-    		setHelper(helper, (RotateEvent)event);
-    	}
+		switch(type) {
+		case MySQLConstants.TABLE_MAP_EVENT:
+			setHelper(helper, (TableMapEvent)event);
+			break;
+		case MySQLConstants.WRITE_ROWS_EVENT:
+    		if (!slave.doWrite(helper, (WriteRowsEvent)event))	System.exit(-1);
+			break;
+		case MySQLConstants.DELETE_ROWS_EVENT:
+    		if (!slave.doDelete(helper, (DeleteRowsEvent)event)) System.exit(-1);
+			break;
+		case MySQLConstants.UPDATE_ROWS_EVENT:
+    		if (!slave.doUpdate(helper,  (UpdateRowsEvent)event)) System.exit(-1);
+			break;
+		case MySQLConstants.ROTATE_EVENT:
+			setHelper(helper, (RotateEvent)event);
+			break;
+		}
 	}
 	
 

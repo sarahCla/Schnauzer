@@ -9,8 +9,7 @@ import java.sql.*;
  * @author SarahCla
  */
 public interface ISlaveDbHelper extends IDbHelper {
-	public ResultSet getSlaveStatus();
-
+	public SlaveStatus getSlaveStatus() throws Exception;
 	public ResultSet getTableFields(String TableName);
 
 }

@@ -33,12 +33,14 @@ import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.listener.TableReplicator.ITableReplicator;
 import com.sarah.Schnauzer.listener.TableReplicator.Impl.RepField;
 import com.sarah.Schnauzer.listener.TableReplicator.Impl.RepTableNew;
+import com.sarah.tools.type.StrHelp;
 
 /**
 * @author SarahCla
 */
 public class ConfigGetHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigGetHelper.class);
+	
 	private String filename = "Config.xml";
 	
 	private boolean isEqual(Attribute att, String name) {
@@ -60,7 +62,7 @@ public class ConfigGetHelper {
 			Iterator<Element> i=root.elementIterator(); i.hasNext();)
 			{
 				Element head = (Element)i.next();
-				if (!head.getName().equalsIgnoreCase("WarmingSendMailList")) continue;
+				if (!head.getName().equalsIgnoreCase(Tags.MailLists)) continue;
 				for(Iterator<Element> j = head.elementIterator();j.hasNext();)
 				{
 					Element elem = (Element) j.next();
@@ -85,7 +87,7 @@ public class ConfigGetHelper {
 			for(Iterator i=root.elementIterator(); i.hasNext();)
 			{
 				Element head = (Element)i.next();
-				if (!head.getName().trim().equalsIgnoreCase("HeartBeat")) continue;
+				if (!StrHelp.TEqual(head.getName(), Tags.HeartBeat)) continue;
 				List<Attribute> attrList = head.attributes();
 				for (int n=0; n<attrList.size(); n++) 
 				{
@@ -123,7 +125,7 @@ public class ConfigGetHelper {
 			for(Iterator i=root.elementIterator(); i.hasNext();)
 			{
 				Element head = (Element)i.next();
-				if (!head.getName().trim().equalsIgnoreCase(name)) continue;
+				if (!StrHelp.TEqual(head.getName(), name)) continue;
 				List<Attribute> attrList = head.attributes();
 				for (int n=0; n<attrList.size(); n++) 
 				{
@@ -148,6 +150,7 @@ public class ConfigGetHelper {
 				}				
 				break;
 			}
+			if (StrHelp.TEqual(name, Tags.MasterDB)) dbConfig.setType(Tags.MySql); 
 			LOGGER.info("获取" + name + "配置成功");
 		} catch (DocumentException e) {
 			LOGGER.error("获取" + name + "配置失败：" + e.getMessage());

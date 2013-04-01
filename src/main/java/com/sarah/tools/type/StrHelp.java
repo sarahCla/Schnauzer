@@ -4,6 +4,10 @@ public class  StrHelp {
 	public static Boolean equal(String str1, String str2) {
 		return str1.equalsIgnoreCase(str2);
 	}
+
+	public static Boolean TEqual(String str1, String str2) {
+		return str1.trim().equalsIgnoreCase(str2.trim());
+	}
 	
 	public static Boolean notEqual(String str1, String str2) {
 		return (!str1.equalsIgnoreCase(str2));

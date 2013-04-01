@@ -30,7 +30,7 @@ import com.sarah.Schnauzer.helper.DB.MasterDBHelper;
 import com.sarah.Schnauzer.helper.DB.SlaveHelperFactory;
 import com.sarah.Schnauzer.listener.TableReplicator.Impl.RepField;
 import com.sarah.Schnauzer.listener.TableReplicator.Impl.RepTableNew;
-import com.sarah.Schnauzer.listener.master.AbstractMaster;
+import com.sarah.Schnauzer.listener.master.AbstractSQLMaster;
 import com.sarah.Schnauzer.listener.master.IMaster;
 
 
@@ -38,7 +38,7 @@ import com.sarah.Schnauzer.listener.master.IMaster;
  * 
  * @author SarahCla
  */
-public class SchnauzerMaster extends AbstractMaster implements IMaster {
+public class SchnauzerMaster extends AbstractSQLMaster implements IMaster {
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(SchnauzerMaster.class);	
 	
@@ -46,26 +46,6 @@ public class SchnauzerMaster extends AbstractMaster implements IMaster {
 		super(master, slave);
 	}
 	
-	@Override
-	public String getHost() {
-		return this.slaveDb.host;
-	}
-
-	@Override
-	public int getPort() {
-		return this.slaveDb.port;
-	}
-
-	@Override
-	public String getUser() {
-		return this.slaveDb.user;
-	}
-
-	@Override
-	public String getPassword() {
-		return this.slaveDb.pwd;
-	}
-
 	private boolean setUnsignedLong(RepTableNew table) {
 		ISlaveDbHelper sdbhelper = new SlaveHelperFactory(this.slaveDb);
 		try
