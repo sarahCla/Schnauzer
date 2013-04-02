@@ -16,6 +16,7 @@
  */
 package com.sarah.Schnauzer.listener.master.Impl;
 
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -27,6 +28,7 @@ import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.ErrorHelper;
 import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.WarmingMailHelper;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
@@ -34,6 +36,7 @@ import com.sarah.Schnauzer.helper.DB.MasterDBHelper;
 import com.sarah.Schnauzer.helper.DB.Redis.RedisSlaveDBHelper;
 import com.sarah.Schnauzer.listener.ColumnTypeHelper;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.ITableReplicator;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.BaseField;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Impl.RedisSchnauzer;
 import com.sarah.Schnauzer.listener.master.IMaster;
 
@@ -59,85 +62,30 @@ public class SchnauzerRedisMaster  implements IMaster {
 		{
 			tables.clear();
 			ConfigGetHelper conf = new ConfigGetHelper();
-			//conf.getRepTables(this.tables);
-			
+			conf.getRedisTables(tables);
+			MasterDBHelper mdbhelper = new MasterDBHelper(master);
+			for (int i=0; i<this.tables.size(); i++)
+			{
+				RedisSchnauzer table = (RedisSchnauzer)this.tables.get(i);
+				ResultSet rs = mdbhelper.getTableFields(table.getMasterTableName());
+				int index = 0;
+				Boolean haveCol = false;
+				while(rs.next())
+				{
+					haveCol = true;
+					BaseField field = new BaseField(rs.getString("column_name"));
+					table.addMasterField(field);
+					
+					
+				}	
+				if (!haveCol) {
+					ErrorHelper.errExit(String.format(Infos.TableNotExist, table.getMasterTableName(), masterDb.dbname));
+				}
+			}
 		} catch (Exception e) {
 			LOGGER.error(Infos.GetTableConfigs + Infos.Failed + e.toString());
 			return false;
 		}
-		
-		/*
-		try
-		{
-			this.tables.clear();
-			ConfigGetHelper conf = new ConfigGetHelper();
-			conf.getRepTables(this.tables);
-			MasterDBHelper mdbhelper = new MasterDBHelper(master);
-			boolean pass = true;
-			boolean haveCol = false;
-			for (int i=0; i<this.tables.size(); i++)
-			{
-				RepTableNew table = (RepTableNew)this.tables.get(i);
-				//fields get from config.xml
-				List<RepField> confFields = table.getConfFields();
-				//get fields from master table
-				ResultSet rs = mdbhelper.getTableFields(table.getMasterTableName());
-				haveCol = false;
-				boolean isDiff = table.isHeterogenous();
-				while(rs.next())
-				{
-					haveCol = true;
-					RepField field = new RepField();
-					String mFieldName = rs.getString("column_name");
-					if (isDiff) 
-					{
-						RepField f = table.getConfField(mFieldName);
-						field.copy(f);	
-					} else {
-						field.masterfield = mFieldName;
-						field.slavefield = field.masterfield;
-					}
-					setFieldUnsignedLong(field, rs);
-					setCharacterSet(field, rs);
-					table.addFullField(field);
-					if (table.checkfield.equalsIgnoreCase(mFieldName)) 
-						table.checkFieldIndex = table.getFieldCount()-1;
-				}
-				if (!haveCol) {
-					LOGGER.error("表" + table.getMasterTableName() + "在master数据库" + masterDb.dbname + "中不存在");
-					System.exit(-1);
-				}
-				String defStr = "";
-				for (int j=0; j<confFields.size(); j++)
-				{
-					RepField f = confFields.get(j); 
-					if (!f.isNew) continue;
-					RepField newfield = new RepField();
-					newfield.copy(f);
-					table.addFullField(newfield);
-					if (newfield.isCuidDefValue) {
-						table.cuidDefault = true;
-						defStr += ",";
-					}
-					else
-						defStr += "," + f.defvalue;
-				}
-				table.defValueStr = defStr;
-				setUnsignedLong(table);
-				table.setFieldNameTag(this.slaveDb.fieldTag[0], this.slaveDb.fieldTag[1]);
-				LOGGER.info("{}", table.getFullFields());
-				pass = pass && table.setIndex(); 
-			}
-			if (!pass) 
-			{
-				LOGGER.error("获取待复制表配置失败");
-				System.exit(-1);
-			}
-		} catch (Exception e) {
-			LOGGER.error("获取待复制表配置失败" + e.toString());
-			return false;
-		}
-		*/
 		return true;
 	}
 

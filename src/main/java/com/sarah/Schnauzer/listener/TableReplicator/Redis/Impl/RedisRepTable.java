@@ -14,34 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields;
+package com.sarah.Schnauzer.listener.TableReplicator.Redis.Impl;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.BaseField;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.RedisStructure;
 
 /**
  * 
  * @author SarahCla
  */
-public class BaseField {
-	public  String     masterfield = "";
-	public  int       fieldtype = -1;       //int result = this.colTypes[index] & 0xff;
-	public  int       fieldindex = -1;
-
-	public BaseField() {
-		
+public class RedisRepTable {
+	private List<BaseField> keyfields = new CopyOnWriteArrayList<BaseField>();
+	public String MasterTable = "";
+	public String SlaveKey = "";
+	public RedisStructure type = null; 
+	
+	public void setKeyFiels(String keyFields) {
+		keyfields.clear();
+		String[] fields = keyFields.split(",");
+		for (int i=0; i<fields.length; i++) {
+			BaseField field = new BaseField(fields[i]);
+			keyfields.add(field);
+		}
 	}
 	
-	public BaseField(String field) {
-		this.masterfield = field;
-	}
-	
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-		.append("MasterField", masterfield)
-		.append("FieldIndex", fieldindex)
-		.append("FieldType", fieldtype).toString();
-	}	
 		
 }

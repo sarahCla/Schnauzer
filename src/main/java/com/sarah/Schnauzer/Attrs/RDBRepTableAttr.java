@@ -1,6 +1,6 @@
-package com.sarah.Schnauzer.helper;
+package com.sarah.Schnauzer.Attrs;
 
-public interface RDBRepTable {
+public interface RDBRepTableAttr {
     String MasterTable = "MasterTable";
     String SlaveTable = "SlaveTable";
     String KeyField = "KeyField";

@@ -35,6 +35,9 @@ import com.sarah.Schnauzer.listener.TableReplicator.RDB.ITableReplicator;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RDBSchnauzer;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.CheckField;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.MemberField;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.ScoreField;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.ValueField;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Impl.RedisSchnauzer;
 import com.sarah.tools.type.StrHelp;
 
@@ -43,6 +46,20 @@ import com.sarah.tools.type.StrHelp;
 */
 public class ConfigGetHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigGetHelper.class);
+	
+	private Element getRootElem() {
+		Element root = null;
+		try {
+			File inputXml = new File(Tags.ConfigFile);
+			SAXReader saxReader = new SAXReader();
+			Document document = saxReader.read(inputXml);
+			root = document.getRootElement();
+		} catch (DocumentException e) {
+			LOGGER.error(Infos.OpenConfigFile + Infos.Failed + "：" + e.getMessage());
+			return null;
+		}		
+		return root;
+	}
 	
 	private boolean isEqual(Attribute att, String name) {
 		return att.getName().trim().equalsIgnoreCase(name);
@@ -54,11 +71,8 @@ public class ConfigGetHelper {
 	
 	public boolean getMailList(List<String> recipients) {
 		try {
-			File inputXml = new File(Tags.ConfigFile);
-			SAXReader saxReader = new SAXReader();
-			recipients.clear();
-			Document document = saxReader.read(inputXml);
-			Element root = document.getRootElement();
+			Element root = getRootElem();
+			recipients.clear();			
 			for(@SuppressWarnings("unchecked")
 			Iterator<Element> i=root.elementIterator(); i.hasNext();)
 			{
@@ -70,7 +84,7 @@ public class ConfigGetHelper {
 					recipients.add(elem.getText());
 				}
 			}
-		} catch (DocumentException e) {
+		} catch (Exception e) {
 			LOGGER.error(Infos.GetMailConf + Infos.Failed + "：" + e.getMessage());
 			return false;
 		}
@@ -80,10 +94,7 @@ public class ConfigGetHelper {
 
 	public boolean getHeartBeatSet(HeartBeatInfo info) {
 		try {
-			File inputXml = new File(Tags.ConfigFile);
-			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(inputXml);
-			Element root = document.getRootElement();
+			Element root = getRootElem();
 			String value = "";
 			for(Iterator i=root.elementIterator(); i.hasNext();)
 			{
@@ -105,7 +116,7 @@ public class ConfigGetHelper {
 				break;
 			}
 			LOGGER.info(Infos.GetHeartBeatConf + Infos.OK);
-		} catch (DocumentException e) {
+		} catch (Exception e) {
 			LOGGER.error(Infos.GetHeartBeatConf + Infos.Failed + ":" + e.getMessage());
 			return false;
 		}
@@ -115,10 +126,7 @@ public class ConfigGetHelper {
 	
 	public boolean getSlaveDBConfig(DBConnectorConfig dbConfig, String name) {
 		try {
-			File inputXml = new File(Tags.ConfigFile);
-			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(inputXml);
-			Element root = document.getRootElement();
+			Element root = getRootElem();
 			String value = "";
 			for(Iterator i=root.elementIterator(); i.hasNext();)
 			{
@@ -146,20 +154,16 @@ public class ConfigGetHelper {
 				break;
 			}			 
 			LOGGER.info( Infos.GetDBConfigs + name + Infos.OK);
-		} catch (DocumentException e) {
+		} catch (Exception e) {
 			LOGGER.error( Infos.GetDBConfigs + name + Infos.Failed + "：" + e.getMessage());
 			return false;
 		}
 		return true;
 	}
 	
-	
 	public boolean getMasterDBConfig(DBConnectorConfig dbConfig, String name) {
 		try {
-			File inputXml = new File(Tags.ConfigFile);
-			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(inputXml);
-			Element root = document.getRootElement();
+			Element root = getRootElem();
 			String value = "";
 			for(Iterator i=root.elementIterator(); i.hasNext();)
 			{
@@ -184,13 +188,12 @@ public class ConfigGetHelper {
 			}
 			if (StrHelp.TEqual(name, Tags.MasterDB)) dbConfig.setType(Tags.MySql); 
 			LOGGER.info( Infos.GetDBConfigs + name + Infos.OK);
-		} catch (DocumentException e) {
+		} catch (Exception e) {
 			LOGGER.error( Infos.GetDBConfigs + name + Infos.Failed + "：" + e.getMessage());
 			return false;
 		}
 		return true;
 	}
-	
 	
 	public boolean getDBConfig(DBConnectorConfig dbConfig, String name) {
 		if (StrHelp.TEqual(name, Tags.MasterDB)) 
@@ -199,12 +202,31 @@ public class ConfigGetHelper {
 			return getSlaveDBConfig(dbConfig, name);
 	}
 	
-	/**
-	 * Get Attributes of <RepTableList><Table> 
-	 * @param table
-	 * @param attrList
-	 * @return
-	 */
+	public boolean getRDBRepTables(List<ITableReplicator> tables) {
+		try {
+			Element root = getRootElem();
+			for(Iterator i=root.elementIterator(); i.hasNext();)
+			{
+				Element head = (Element)i.next();
+				if (!StrHelp.TEqual(head.getName(), Tags.RDBRepTableList)) continue;
+				for(Iterator j=head.elementIterator(); j.hasNext();)
+				{
+					Element elem = (Element) j.next();
+					RDBSchnauzer table = new RDBSchnauzer();
+					tables.add(table);
+					getRDBRepTableAttr(table, elem.attributes());
+					List<RepField> fields = table.getConfFields();
+					getRDBRepTableFields(table, elem, fields);
+				}
+			}
+			LOGGER.info(Infos.GetTableConfigs + Infos.OK);
+		} catch (Exception e) {
+			LOGGER.error(Infos.GetTableConfigs + Infos.Failed + "：" + e.getMessage());
+			return false;
+		}
+		return true;
+	}
+	
 	private void getRDBRepTableAttr(RDBSchnauzer table, List<Attribute> attrList) 
 	{
 		String value = "";
@@ -212,13 +234,13 @@ public class ConfigGetHelper {
 		{
 		    Attribute att = (Attribute)attrList.get(n);
 		    value = att.getValue().trim();
-		    if (isEqual(att, RDBRepTable.MasterTable))          table.setMasterTable(value);
-		    else if (isEqual(att, RDBRepTable.SlaveTable)) 	    table.setSlaveTable(value);
-		    else if (isEqual(att, RDBRepTable.KeyField))   	    table.setKeyFields(value);
-		    else if (isEqual(att, RDBRepTable.CheckField)) 	    table.setCheckField(value);
-		    else if (isEqual(att, RDBRepTable.NeedRepValue))   table.setNeedRepValue(value);
-		    else if (isEqual(att, RDBRepTable.heterogeneous)) 	table.setHeterogeneous(value);
-		    else if (isEqual(att, RDBRepTable.mergedTable))    	table.setMergedTable(value);
+		    if (isEqual(att, RDBRepTableAttr.MasterTable))          table.setMasterTable(value);
+		    else if (isEqual(att, RDBRepTableAttr.SlaveTable)) 	    table.setSlaveTable(value);
+		    else if (isEqual(att, RDBRepTableAttr.KeyField))   	    table.setKeyFields(value);
+		    else if (isEqual(att, RDBRepTableAttr.CheckField)) 	    table.setCheckField(value);
+		    else if (isEqual(att, RDBRepTableAttr.NeedRepValue))   table.setNeedRepValue(value);
+		    else if (isEqual(att, RDBRepTableAttr.heterogeneous)) 	table.setHeterogeneous(value);
+		    else if (isEqual(att, RDBRepTableAttr.mergedTable))    	table.setMergedTable(value);
 		    else
 		    	ErrorHelper.errExit(Tags.RDBRepTableList + Infos.IllegalAttr + att.getName());
 		}
@@ -238,7 +260,7 @@ public class ConfigGetHelper {
 			    if (isEqual(att, RDBFieldAttr.MasterField))
 			    {
 			    	field.masterfield = value;
-			    	field.isNew = field.masterfield.equalsIgnoreCase("");
+			    	field.isNew = StrHelp.TEmpty(field.masterfield);
 			    }
 			    else if (isEqual(att, RDBFieldAttr.SlaveField))    	field.slavefield = value;
 			    else if (isEqual(att, RDBFieldAttr.DefaultValue))  	field.defvalue = value;
@@ -256,66 +278,142 @@ public class ConfigGetHelper {
 		}
 	}
 	
-	/*
-	private void getRedisTableCheckFields(RedisSchnauzer table, Element elem, List<CheckField> fields) {
-		String value = "";
-		for(Iterator f=elem.elementIterator(); f.hasNext();)
-		{
-			RepField field = new RepField();
-			Element elemField = (Element)f.next();
-			List attrList2 = elemField.attributes();
-			for (int n1=0; n1<attrList2.size(); n1++) 
-			{
-			    Attribute att = (Attribute)attrList2.get(n1);
-			    value = att.getValue().trim();
-			    if (isEqual(att, RDBFieldAttr.MasterField))
-			    {
-			    	field.masterfield = value;
-			    	field.isNew = field.masterfield.equalsIgnoreCase("");
-			    }
-			    else if (isEqual(att, RDBFieldAttr.SlaveField))    	field.slavefield = value;
-			    else if (isEqual(att, RDBFieldAttr.DefaultValue))  	field.defvalue = value;
-			    else if (isEqual(att, RDBFieldAttr.DefaultType)) {
-			    	String type = value;
-			    	if (type.equalsIgnoreCase("CUID")) {
-			    		field.isCuidDefValue = true;
-			    		table.cuidDefault = true;
-			    	}
-			    }
-			    else
-			    	ErrorHelper.errExit(Tags.RDBField + Infos.IllegalAttr + att.getName());
-			}
-			fields.add(field);
-		}
-	}
-	*/
-	
-	public boolean getRDBRepTables(List<ITableReplicator> tables) {
+	public Boolean getRedisTables(List<RedisSchnauzer> tables) {
 		try {
-			File inputXml = new File(Tags.ConfigFile);
-			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(inputXml);
-			Element root = document.getRootElement();
+			Element root = getRootElem();
 			for(Iterator i=root.elementIterator(); i.hasNext();)
 			{
 				Element head = (Element)i.next();
-				if (!StrHelp.TEqual(head.getName(), Tags.RDBRepTableList)) continue;
+				if (!StrHelp.TEqual(head.getName(), Tags.RedisRepTableList)) continue;
 				for(Iterator j=head.elementIterator(); j.hasNext();)
 				{
 					Element elem = (Element) j.next();
-					RDBSchnauzer table = new RDBSchnauzer();
+					RedisSchnauzer table = new RedisSchnauzer();
 					tables.add(table);
-					getRDBRepTableAttr(table, elem.attributes());
-					List<RepField> fields = table.getConfFields();
-					getRDBRepTableFields(table, elem, fields);
+					getRedisTableAttr(table, elem.attributes());
+					getRedisTableFields(table, elem);
 				}
 			}
 			LOGGER.info(Infos.GetTableConfigs + Infos.OK);
-		} catch (DocumentException e) {
+		} catch (Exception e) {
 			LOGGER.error(Infos.GetTableConfigs + Infos.Failed + "：" + e.getMessage());
 			return false;
 		}
 		return true;
+
 	}
+	
+	private void getRedisTableAttr(RedisSchnauzer table, List<Attribute> attrList) {
+		String value = "";
+		for (int n=0; n<attrList.size(); n++) 
+		{
+		    Attribute att = (Attribute)attrList.get(n);
+		    value = att.getValue().trim();
+		    if (isEqual(att, RedisRepTableAttr.MasterTable))        table.setMasterTable(value);
+		    else if (isEqual(att, RedisRepTableAttr.SlaveKey ))    table.setSlaveKey(value);
+		    else if (isEqual(att, RedisRepTableAttr.DataType))   	table.setDataType(value);
+		    else if (isEqual(att, RedisRepTableAttr.KeyField)) 	    table.setKeyFields(value);
+		    else
+		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->Table" + Infos.IllegalAttr + att.getName());
+		}
+	}
+	
+	private void getCheckFields(Element elem, List<CheckField> ckfields) {
+		List attrs = elem.attributes();
+		CheckField field = new CheckField();
+		String value = "";
+		for (int n1=0; n1<attrs.size(); n1++) 
+		{
+		    Attribute att = (Attribute)attrs.get(n1);
+		    value = att.getValue().trim();
+		    if (isEqual(att, RedisCheckFieldAttr.MasterField)) {
+		    	field.masterfield = value;
+		    } else if (isEqual(att, RedisCheckFieldAttr.Value)) {
+		    	field.setValue(value);
+		    } else if (isEqual(att, RedisCheckFieldAttr.Operator)) {
+		    	field.setOperator(value);
+		    } else {
+		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisCheckField + Infos.IllegalAttr + att.getName());
+		    }
+		}
+		ckfields.add(field);
+	}
+
+	private void getValueFields(Element elem, List<ValueField> vlfields) {
+		List attrs = elem.attributes();
+		ValueField field = new ValueField();
+		String value = "";
+		for (int n1=0; n1<attrs.size(); n1++) 
+		{
+		    Attribute att = (Attribute)attrs.get(n1);
+		    value = att.getValue().trim();
+		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
+		    	field.masterfield = value;
+		    } else {
+		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisValueField + Infos.IllegalAttr + att.getName());
+		    }
+		}
+		vlfields.add(field);
+	}
+
+	private void getMemberFields(Element elem, List<MemberField> vlfields) {
+		List attrs = elem.attributes();
+		MemberField field = new MemberField();
+		String value = "";
+		for (int n1=0; n1<attrs.size(); n1++) 
+		{
+		    Attribute att = (Attribute)attrs.get(n1);
+		    value = att.getValue().trim();
+		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
+		    	field.masterfield = value;
+		    } else {
+		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisMemberField + Infos.IllegalAttr + att.getName());
+		    }
+		}
+		vlfields.add(field);
+	}
+	
+	private void getScoreFields(Element elem, List<ScoreField> vlfields) {
+		List attrs = elem.attributes();
+		ScoreField field = new ScoreField();
+		String value = "";
+		for (int n1=0; n1<attrs.size(); n1++) 
+		{
+		    Attribute att = (Attribute)attrs.get(n1);
+		    value = att.getValue().trim();
+		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
+		    	field.masterfield = value;
+		    } else {
+		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisScoreField + Infos.IllegalAttr + att.getName());
+		    }
+		}
+		vlfields.add(field);
+	}
+	
+	private void getRedisTableFields(RedisSchnauzer table, Element elem) {
+		List<CheckField> ckfields = table.getCheckFields();
+		List<ValueField> vlfields = table.getValueFields();
+		List<MemberField> memfields = table.getMemberFields();
+		List<ScoreField> scorefields = table.getScoreFields();
+		
+		String value = "";
+		String tag = "";
+		for(Iterator f=elem.elementIterator(); f.hasNext();)
+		{
+			Element elemField = (Element)f.next();
+			tag = elemField.getName();
+			if (StrHelp.TEqual(tag, Tags.RedisCheckField)) 
+				getCheckFields(elemField, ckfields);
+			else if (StrHelp.TEqual(tag, Tags.RedisMemberField))
+				getMemberFields(elemField, memfields);
+			else if (StrHelp.TEqual(tag, Tags.RedisScoreField))
+				getScoreFields(elemField, scorefields);
+			else if (StrHelp.TEqual(tag, Tags.RedisValueField))
+				getValueFields(elemField, vlfields);
+		    else
+		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisTable + Infos.IllegalTag + tag);
+		}
+	}
+	
 	
 }

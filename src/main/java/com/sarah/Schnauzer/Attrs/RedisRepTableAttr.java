@@ -14,34 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+package com.sarah.Schnauzer.Attrs;
 
 /**
  * 
  * @author SarahCla
  */
-public class BaseField {
-	public  String     masterfield = "";
-	public  int       fieldtype = -1;       //int result = this.colTypes[index] & 0xff;
-	public  int       fieldindex = -1;
-
-	public BaseField() {
-		
-	}
-	
-	public BaseField(String field) {
-		this.masterfield = field;
-	}
-	
-	@Override
-	public String toString() {
-		return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-		.append("MasterField", masterfield)
-		.append("FieldIndex", fieldindex)
-		.append("FieldType", fieldtype).toString();
-	}	
-		
+public interface RedisRepTableAttr {
+	String MasterTable = "MasterTable";
+	String SlaveKey = "SlaveKey";
+	String KeyField = "KeyField";
+	String DataType = "DataType";
 }
