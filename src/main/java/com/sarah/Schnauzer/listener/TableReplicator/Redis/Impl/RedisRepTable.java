@@ -40,5 +40,7 @@ public class RedisRepTable {
 		}
 	}
 	
-		
+	public List<BaseField> getKeyFields() {
+		return keyfields;
+	}
 }

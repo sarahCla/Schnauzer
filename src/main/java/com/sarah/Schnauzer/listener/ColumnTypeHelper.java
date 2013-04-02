@@ -30,6 +30,8 @@ import com.google.code.or.common.glossary.UnsignedLong;
 import com.google.code.or.common.glossary.column.BitColumn;
 import com.google.code.or.common.glossary.column.StringColumn;
 import com.google.code.or.common.util.MySQLConstants;
+import com.sarah.Schnauzer.helper.ErrorHelper;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.WarmingMailHelper;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 import com.sarah.tools.type.TypeTransfer;
@@ -77,6 +79,7 @@ public class ColumnTypeHelper {
 		return sql;
 	}
 	
+	
 
 	public String getColStr(int index, Column col, byte unsigntag, RepField field) throws UnsupportedEncodingException  
 	{
@@ -106,7 +109,7 @@ public class ColumnTypeHelper {
 					else
 						res = new String(bs, "gbk");
 				} catch (UnsupportedEncodingException e1) {
-					LOGGER.error("编码转换错误");
+					LOGGER.error(Infos.EncodeParseError);
 					throw e1;
 				}
 				value = "'" + res + "'";
@@ -138,9 +141,7 @@ public class ColumnTypeHelper {
 			    	  Date d2 = new SimpleDateFormat(this.dateFormatStr, Locale.US).parse(col.toString());		
 			    	  value = "'" + TypeTransfer.dateTimeToString(d2) + "'";
 			      } catch (ParseException e) {
-			    	 WarmingMailHelper mailsender = new WarmingMailHelper("Config.xml");
-			    	 mailsender.send("【复制故障】", "日期格式： " + col.toString() + "解析失败，请在config.xml中添加格式配置");
-			    	 System.exit(-1);
+			    	  ErrorHelper.errExit(String.format(Infos.DateParseError, col.toString()));
 			      }
 				}
 		  	    break;

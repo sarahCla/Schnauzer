@@ -34,6 +34,7 @@ import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.helper.WarmingMailHelper;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
@@ -81,19 +82,19 @@ public abstract class AbstractRDBMaster implements IMaster {
 	}
 	
 	private String getWarning(String[] sqls, String[] errInfo) {
-		String msg = "【下面的语句导致复制停止，请尽快处理，重启复制】" + "<br>";
+		String msg = Infos.FailedEmailTitle + "<br>";
 		for (int i=1; i<sqls.length; i++) {
 			if ((sqls[i]==null)||(sqls[i].isEmpty())) continue;
 			msg += sqls[i] + "<br>";
 		}
-		msg += "【错误类型】" + "<br>" + errInfo[0] + "<br>" + "Version " + Tags.version; 
+		msg += Infos.ErrorType + "<br>" + errInfo[0] + "<br>" + "Version " + Tags.version; 
 		msg += "<br>";
-		msg += "【配置状况】" + "<br>Slave类型：" + this.slaveDb.getType() +
+		msg += Infos.Config + "<br>Slave" + Infos.Type + ":" + this.slaveDb.getType() +
 				"<br>Slave: " + this.slaveDb.host +
 				"<br>Slave database: " + this.slaveDb.dbname +
 				"<br>Master: " + this.masterDb.host +
 				"<br>Master database: " + this.masterDb.dbname + "<br>";
-		msg += "【当前复制位置】" + "<br>";
+		msg += Infos.CurPos + "<br>";
 		msg += "BinlogFile : " + this.slaveDb.binlog + "<br>";
 		msg += "Position : " + this.slaveDb.pos + "<br>";
 		return  msg;
@@ -116,9 +117,9 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
-			LOGGER.info("自动更新位置成功：" + sqls[0]);
+			LOGGER.info(Infos.AutoSetPos + Infos.OK + ":" + sqls[0]);
 		} else
-			LOGGER.error("自动更新位置失败：" + sqls[0]);
+			LOGGER.error(Infos.AutoSetPos + Infos.Failed + ":" + sqls[0]);
 		lSysTime = System.currentTimeMillis();
 	}
 	
@@ -130,7 +131,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String sqlValue = "";			
-		LOGGER.info(rows.size() + "行");
+		LOGGER.info(rows.size() + Infos.Row);
 		for (int j=0; j<rows.size(); j++)
 		{
 			Row row = rows.get(j);    			
@@ -173,7 +174,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String rowSql = "";			
-		LOGGER.info(rows.size() + "行");
+		LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
 		for (int j=0; j<rows.size(); j++)
 		{
@@ -206,7 +207,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String rowSql = "";			
-		LOGGER.info(rows.size() + "行");
+		LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
 		for (int j=0; j<rows.size(); j++)
 		{
@@ -235,7 +236,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String rowSql = "";			
-		LOGGER.info(rows.size() + "行");
+		LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
 		for (int j=0; j<rows.size(); j++)
 		{
@@ -255,14 +256,15 @@ public abstract class AbstractRDBMaster implements IMaster {
 	
 	
 	private String[] getInsertSql(ColumnTypeHelper helper, WriteRowsEvent event, ITableReplicator rep) throws UnsupportedEncodingException {
-		if (rep.isMergeTable() && this.slaveDb.isMySQL()) {
-			return getInsertUpdateSql(helper, event, (RDBSchnauzer)rep);
-		} else if (rep.isMergeTable() && this.slaveDb.isSQLServer()) {
-			return getInsUpSqlSql(helper, event, (RDBSchnauzer)rep);
+		RDBSchnauzer table = (RDBSchnauzer)rep;
+		if (rep.isMergeTable() && slaveDb.isMySQL()) {
+			return getInsertUpdateSql(helper, event, table);
+		} else if (rep.isMergeTable() && slaveDb.isSQLServer()) {
+			return getInsUpSqlSql(helper, event, table);
 		} else if (this.slaveDb.isSQLServer2000()) {
-			return getSql2000Sql(helper, event, (RDBSchnauzer)rep);			
+			return getSql2000Sql(helper, event, table);			
 		} else {
-			return getCommInsertSql(helper, event, (RDBSchnauzer)rep); 
+			return getCommInsertSql(helper, event, table); 
 		}
 	}
 	
@@ -279,11 +281,11 @@ public abstract class AbstractRDBMaster implements IMaster {
 	
 	private void rollBackToTableEvent(ColumnTypeHelper helper) {
 		String retInfo = "";
-		dbhelper.executeSql("update RepStatus set pos=" + helper.tableMapPos + " , binlog='" + this.getBinLogName(helper) + "' where masterID=" + slaveDb.masterID, retInfo);
+		dbhelper.executeSql("update " + Tags.repTable + " set pos=" + helper.tableMapPos + " , binlog='" + this.getBinLogName(helper) + "' where masterID=" + slaveDb.masterID, retInfo);
 	}
 	
 	private void mailAndLog(String title, String context) {
-		mailsender.send("【复制故障】"+ slaveDb.host + title, context );
+		mailsender.send(Infos.RepFailed+ slaveDb.host + title, context );
 		context = context.replaceAll("<br>", System.getProperty("line.separator"));
 		LOGGER.error(title + context);
 	}
@@ -311,7 +313,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 			try {
 				rowsqls = getInsertSql(helper, event, rep);
 			} catch(Exception e) {
-				mailAndLog("生成插入语句失败", e.getMessage());
+				mailAndLog(Infos.Create + Infos.DoInsert + Infos.Failed, e.getMessage());
 				return false;
 			}
 			if (sqls==null) {
@@ -335,12 +337,12 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
-			LOGGER.info("插入成功");
+			LOGGER.info(Infos.DoInsert + Infos.OK);
 			return true;
 		}
 
 		String sInfo = getWarning(sqls, errInfo);
-		mailAndLog("插入语句失败", sInfo);
+		mailAndLog(Infos.DoInsert + Infos.Failed, sInfo);
 		rollBackToTableEvent(helper);
 		return false;
 	}
@@ -375,7 +377,7 @@ public abstract class AbstractRDBMaster implements IMaster {
         			preSql = helper.getUpdataStr(pcolumns, rep.getColumnNames(), unsigntags, rep.getFullFields());
         			aftSql = helper.getUpdataStr(columns, rep.getColumnNames(), unsigntags, rep.getFullFields());
     			} catch(Exception e) {
-    				mailAndLog("生成更新语句失败", e.getMessage());
+    				mailAndLog(Infos.Create + Infos.DoUpdate + Infos.Failed, e.getMessage());
     				return false;
     			}
     			
@@ -384,7 +386,7 @@ public abstract class AbstractRDBMaster implements IMaster {
     			try {
     				sql += " where " + getWhereStr(rep, columns, helper);
     			} catch(Exception e) {
-    				mailAndLog("生成更新语句失败", e.getMessage());
+    				mailAndLog(Infos.Create + Infos.DoUpdate + Infos.Failed, e.getMessage());
     				return false;
     			}
     				
@@ -417,18 +419,18 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
-			LOGGER.info("更新成功");
+			LOGGER.info(Infos.DoUpdate + Infos.OK);
 			return true;
 		}
 
 		String sInfo = getWarning(sqls, errInfo);
-		mailAndLog("更新语句失败", sInfo);
+		mailAndLog(Infos.DoUpdate + Infos.Failed, sInfo);
 		this.slaveDb.errorMsg = "Update command faild";
 		HeartBeatInfo hinfo = new HeartBeatInfo();
 		ConfigGetHelper conf = new ConfigGetHelper();
 		conf.getHeartBeatSet(hinfo);			
 		if (hinfo.port>0 && !hinfo.host.isEmpty()) {
-			LOGGER.info("出错信息包发送。。。");
+			LOGGER.info(Infos.SendErrorInfo);
 			LocalInfo info = LocalInfoGetter.getLocalInfo();
 			hinfo.SerialNo = info.getSNStr();
 			HeartBeatSender  beatSender = new HeartBeatSender(this.masterDb, this.slaveDb, hinfo);
@@ -446,7 +448,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		for (int i=0; i<tables.size(); i++)
 		{
 			RDBSchnauzer rep =  (RDBSchnauzer)tables.get(i);
-			if (notEqualS(helper.databaseName, this.masterDb.dbname)) continue;
+			if (notEqualS(helper.databaseName, masterDb.dbname)) continue;
 			if (notEqualS(helper.tableName, rep.getMasterTableName())) continue;
 			List<Row> rows = event.getRows();
 			for (int j=0; j<rows.size(); j++)
@@ -461,7 +463,7 @@ public abstract class AbstractRDBMaster implements IMaster {
     			try {
 	   				sqls[++index] = rep.getDelete() + getWhereStr(rep, columns, helper);
 				} catch(Exception e) {
-					mailAndLog("生成删除语句失败", e.getMessage());
+					mailAndLog(Infos.Create + Infos.DoDelete + Infos.Failed, e.getMessage());
 					return false;
 				}
 			}
@@ -476,14 +478,14 @@ public abstract class AbstractRDBMaster implements IMaster {
 		
 		if (dbhelper.excuteSqlByTransaction(sqls, errInfo))
 		{
-			this.slaveDb.binlog = this.getBinLogName(helper);
-			this.slaveDb.pos = helper.position;
-			LOGGER.info("删除成功");
+			slaveDb.binlog = this.getBinLogName(helper);
+			slaveDb.pos = helper.position;
+			LOGGER.info(Infos.DoDelete + Infos.OK);
 			return true;
 		}
 
 		String sInfo = getWarning(sqls, errInfo);
-		mailAndLog("删除语句失败", sInfo);
+		mailAndLog(Infos.DoDelete + Infos.Failed, sInfo);
 		rollBackToTableEvent(helper);
 		return false;
 	}

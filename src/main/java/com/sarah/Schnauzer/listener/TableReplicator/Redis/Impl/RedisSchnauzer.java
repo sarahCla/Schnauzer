@@ -21,8 +21,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.code.or.common.glossary.Column;
 import com.sarah.Schnauzer.helper.ErrorHelper;
 import com.sarah.Schnauzer.helper.Infos;
+import com.sarah.Schnauzer.listener.ColumnTypeHelper;
+import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.*;
 import com.sarah.tools.type.StrHelp;
 
@@ -35,16 +38,42 @@ public class RedisSchnauzer {
 	
 	public RedisRepTable table = new RedisRepTable();
 	
-	private RedisStructure type = null;
-	private List<BaseField> masterfields = new CopyOnWriteArrayList<BaseField>();
-	
+	private List<RepField> masterfields = new CopyOnWriteArrayList<RepField>();
 	private List<CheckField> ckfields = new CopyOnWriteArrayList<CheckField>();
-	private List<ValueField> vlfields = new CopyOnWriteArrayList<ValueField>();
-	private List<MemberField> memfields = new CopyOnWriteArrayList<MemberField>();
-	private List<ScoreField> scorefields = new CopyOnWriteArrayList<ScoreField>();
+	private ValueField vlfield;
+	private MemberField memfield;
+	private ScoreField scorefield;
 
+	public String getKey(List<Column> columns) {
+		String v = "";
+		List<BaseField> fields = table.getKeyFields();
+		for(int i=0; i<fields.size(); i++) {
+			 v = v + ":" + columns.get(fields.get(i).fieldindex).getValue().toString();
+		}
+		return table.SlaveKey + v;
+	}
 	
-	public void addMasterField(BaseField field) {
+	public RedisStructure getType() {
+		return table.type;
+	}
+	public boolean needReplicate(List<Column> columns, ColumnTypeHelper helper) {
+		if (ckfields.size()<=0)	return true;
+		try
+		{
+			for(int i=0; i<ckfields.size(); i++) {
+				CheckField field = ckfields.get(i);
+				int index = field.fieldindex;
+				String value = helper.getColStr(index, columns.get(index), (byte)1, masterfields.get(index));
+				LOGGER.info(Infos.CheckValue + "=" + value);
+				if (!field.pass(value)) return false;
+			}
+		} catch(Exception e) {
+			
+		}
+		return true;
+	}
+	
+	public void addMasterField(RepField field) {
 		masterfields.add(field);
 		int index = masterfields.size()-1;
 		
@@ -55,27 +84,22 @@ public class RedisSchnauzer {
 			}
 		}
 		
-		for (int i=0; i<vlfields.size(); i++) {
-			if (StrHelp.TEqual(vlfields.get(i).masterfield, field.masterfield)) {
-				vlfields.get(i).fieldindex = index;
+		List<BaseField> keyfields = table.getKeyFields();
+		for (int i=0; i<keyfields.size(); i++) {
+			if (StrHelp.TEqual(keyfields.get(i).masterfield, field.masterfield)) {
+				keyfields.get(i).fieldindex = index;
 				break;
 			}
 		}
 		
-		for (int i=0; i<memfields.size(); i++) {
-			if (StrHelp.TEqual(memfields.get(i).masterfield, field.masterfield)) {
-				memfields.get(i).fieldindex = index;
-				break;
-			}
-		}
+		if (StrHelp.TEqual(vlfield.masterfield, field.masterfield)) 
+			vlfield.fieldindex = index;
 		
-		for (int i=0; i<scorefields.size(); i++) {
-			if (StrHelp.TEqual(scorefields.get(i).masterfield, field.masterfield)) {
-				scorefields.get(i).fieldindex = index;
-				break;
-			}
-		}
+		if (StrHelp.TEqual(memfield.masterfield, field.masterfield)) 
+			memfield.fieldindex = index;
 		
+		if (StrHelp.TEqual(scorefield.masterfield, field.masterfield)) 
+			scorefield.fieldindex = index;
 	}
 	
 	public void setMasterTable(String v) {
@@ -112,17 +136,16 @@ public class RedisSchnauzer {
 		return ckfields;
 	}
 	
-	public List<ValueField> getValueFields() {
-		return vlfields;
+	public int getValueIndex() {
+		return vlfield.fieldindex;
 	}
 	
-	public List<MemberField> getMemberFields() {
-		return memfields;
+	public int getMemberIndex() {
+		return memfield.fieldindex;
 	}
 	
-	public List<ScoreField> getScoreFields() {
-		return scorefields;
+	public int getScoreIndex() {
+		return scorefield.fieldindex;
 	}
-	
 	
 }

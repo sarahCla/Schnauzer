@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
 
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.ErrorHelper;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.SlaveStatus;
@@ -18,12 +20,45 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 	
 	protected Jedis conn;
 	protected DBConnectorConfig conConfig;
+	
+	public String getBinlogKey() {
+		return Tags.softname + ":" + Tags.binlog + ":" + conConfig.masterID;
+	}
+	
+	public String getPosKey() {
+		return Tags.softname + ":" + Tags.pos + ":" + conConfig.masterID;
+	}
+	
+	public String getPreTableKey() {
+		return Tags.softname + ":PreTableName:" + conConfig.masterID;
+	}
+	
+	public void setBinlogKey(String binlog, String pos, String table) {
+		try
+		{
+			conn.set(getBinlogKey(), binlog);
+			conn.set(getPosKey(), pos);
+			conn.set(getPreTableKey(), table);
+		} catch(Exception e) {
+			ErrorHelper.errExit(Infos.SetPos + Infos.Failed);
+		}
+	}
+	
+	public void sadd(String key, String value) {
+		try
+		{
+			conn.sadd(key, value);
+		} catch(Exception e) {
+			ErrorHelper.errExit("sadd(" + key + "," + value + ")" + Infos.Failed );
+		}
+	}
+	
 
 	@Override
 	public boolean doOpen() {
 		boolean isOpened = false;
 		try {
-			String binlog = conn.get(Tags.softname + ":" + Tags.binlog + ":" + conConfig.masterID);
+			String binlog = conn.get(getBinlogKey());
 			isOpened = true;
 		} catch(Exception e) {
 			isOpened = false;
@@ -63,14 +98,15 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
 
 	@Override
 	public SlaveStatus getSlaveStatus() {
 		SlaveStatus result = null;
 		try
 		{
-			String binlog = conn.get(Tags.softname + ":" + Tags.binlog + ":" + conConfig.masterID);
-			int pos = Integer.parseInt(conn.get(Tags.softname + ":" + Tags.pos + ":" + conConfig.masterID));
+			String binlog = conn.get(getBinlogKey());
+			int pos = Integer.parseInt(conn.get(getPosKey()));
 			result = new SlaveStatus(binlog, pos, conConfig.masterID);
 		} catch(Exception e) {
 			return null;
