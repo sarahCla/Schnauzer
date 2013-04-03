@@ -22,6 +22,7 @@ package com.sarah.tools.type;
  */
 public class  StrHelp {
 	
+	
 	public static Boolean empty(String str) {
 		return str.equalsIgnoreCase("");
 	}

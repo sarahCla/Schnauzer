@@ -8,4 +8,5 @@ public interface RDBRepTableAttr {
     String NeedRepValue = "NeedRepValue";
     String heterogeneous = "heterogeneous";
     String mergedTable = "mergedTable";
+    
 }

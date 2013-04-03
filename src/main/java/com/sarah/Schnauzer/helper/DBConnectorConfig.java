@@ -75,6 +75,10 @@ public class DBConnectorConfig {
 	public boolean isMySQL() {
 		return this.type.equalsIgnoreCase("mysql");
 	}
+
+	public boolean isRedis() {
+		return this.type.equalsIgnoreCase("Redis");
+	}
 	
 	public boolean isSQLServer() {
 		return this.type.equalsIgnoreCase("sqlserver") || this.type.equalsIgnoreCase("sqlserver2000");

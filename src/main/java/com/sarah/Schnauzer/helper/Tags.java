@@ -32,7 +32,6 @@ public interface Tags {
 	
 	String RDBRepTableList = "RepTableList";
 	String RedisRepTableList = "RedisRepTableList";
-	
 	String RDBField = "RepTableList->Table->Field";
 	
 	String RedisTable = "Table";

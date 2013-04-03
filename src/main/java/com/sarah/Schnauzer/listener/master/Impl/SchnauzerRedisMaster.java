@@ -68,6 +68,12 @@ public class SchnauzerRedisMaster  implements IMaster {
 
 	private List<RedisSchnauzer> tables = new CopyOnWriteArrayList<RedisSchnauzer>();
 	
+	public SchnauzerRedisMaster(DBConnectorConfig master, DBConnectorConfig slave) {
+		this.slaveDb = slave;
+		this.masterDb = master;
+	}
+	
+	
 	@Override
 	public boolean registgerTableReplicator(DBConnectorConfig master) {
 		try

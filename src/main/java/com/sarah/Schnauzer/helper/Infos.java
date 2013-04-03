@@ -60,4 +60,5 @@ public interface Infos {
 	String Operators2Handle = "待处理操作符";
 	String CanNotFoundKeyField = "没有找到KeyField的对应列[{}]，请检查配置 ";
 	String TableStructure = "表结构";
+	
 }

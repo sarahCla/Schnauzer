@@ -29,6 +29,7 @@ import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.listener.master.IMaster;
 import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRDBMaster;
+import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRedisMaster;
 
 /**
  * 
@@ -43,7 +44,10 @@ public class ClientTableListener implements BinlogEventListener {
 	
 	public ClientTableListener(DBConnectorConfig masterdb, DBConnectorConfig slavedb) 
 	{
-		this.slave = new SchnauzerRDBMaster(masterdb, slavedb);
+		if (slavedb.isRedis()) 
+			this.slave = new SchnauzerRedisMaster(masterdb, slavedb);
+		else
+			this.slave = new SchnauzerRDBMaster(masterdb, slavedb);
 		helper.dateFormatStr = masterdb.DateFormat;
 	}
 	

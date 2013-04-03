@@ -21,6 +21,7 @@ package com.sarah.Schnauzer.Attrs;
  * @author SarahCla
  */
 public interface RedisRepTableAttr {
+	
 	String MasterTable = "MasterTable";
 	String SlaveKey = "SlaveKey";
 	String KeyField = "KeyField";

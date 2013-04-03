@@ -44,6 +44,10 @@ public class RedisSchnauzer {
 	public MemberField memfield;
 	public ScoreField scorefield;
 
+	public RepField getMasterField(int index) {
+		if (index<0) return null;
+		return masterfields.get(index);
+	}
 	
 	public String getKey(List<Column> columns) {
 		String v = "";
@@ -64,7 +68,7 @@ public class RedisSchnauzer {
 			for(int i=0; i<ckfields.size(); i++) {
 				CheckField field = ckfields.get(i);
 				int index = field.fieldindex;
-				String value = helper.getColStr(index, columns.get(index), (byte)1, masterfields.get(index));
+				String value = helper.getColStr(index, columns.get(index), (byte)1, this. masterfields.get(index));
 				LOGGER.info(Infos.CheckValue + "=" + value);
 				if (!field.pass(value)) return false;
 			}
