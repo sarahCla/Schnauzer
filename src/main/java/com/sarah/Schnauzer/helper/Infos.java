@@ -23,6 +23,8 @@ package com.sarah.Schnauzer.helper;
 public interface Infos {
 	String Failed = "失败";
 	String OK = "成功";
+	String Connect = "连接";
+	String Get = "获取";
 	String IllegalAttr = "无效属性:";
 	String IllegalTag = "无效标签:";
 	String Illegal = "无效";
@@ -55,4 +57,7 @@ public interface Infos {
 	String SetPos = "更新位置";
 	String DateParseError = "日期格式：{}解析失败，请在config.xml中添加格式配置";
 	String EncodeParseError = "编码转换错误";
+	String Operators2Handle = "待处理操作符";
+	String CanNotFoundKeyField = "没有找到KeyField的对应列[{}]，请检查配置 ";
+	String TableStructure = "表结构";
 }

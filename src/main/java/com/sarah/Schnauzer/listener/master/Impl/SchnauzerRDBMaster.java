@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.ErrorHelper;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.MasterDBHelper;
 import com.sarah.Schnauzer.helper.DB.SlaveHelperFactory;
@@ -60,7 +62,7 @@ public class SchnauzerRDBMaster extends AbstractRDBMaster implements IMaster {
 			}
 			rs.close();
 		} catch (SQLException e) {
-			LOGGER.error("获取Slave表结构时出错" + e.getMessage());
+			LOGGER.error(Infos.Get + "Slave" + Infos.TableStructure + Infos.Failed + e.getMessage());
 		}
 		return false;
 	}
@@ -88,9 +90,7 @@ public class SchnauzerRDBMaster extends AbstractRDBMaster implements IMaster {
 			for (int i=0; i<this.tables.size(); i++)
 			{
 				RDBSchnauzer table = (RDBSchnauzer)this.tables.get(i);
-				//fields get from config.xml
 				List<RepField> confFields = table.getConfFields();
-				//get fields from master table
 				ResultSet rs = mdbhelper.getTableFields(table.getMasterTableName());
 				haveCol = false;
 				boolean isDiff = table.isHeterogenous();
@@ -114,8 +114,7 @@ public class SchnauzerRDBMaster extends AbstractRDBMaster implements IMaster {
 						table.checkFieldIndex = table.getFieldCount()-1;
 				}
 				if (!haveCol) {
-					LOGGER.error("表" + table.getMasterTableName() + "在master数据库" + masterDb.dbname + "中不存在");
-					System.exit(-1);
+					ErrorHelper.errExit(String.format(Infos.TableNotExist, table.getMasterTableName(), masterDb.dbname));
 				}
 				String defStr = "";
 				for (int j=0; j<confFields.size(); j++)
@@ -139,13 +138,9 @@ public class SchnauzerRDBMaster extends AbstractRDBMaster implements IMaster {
 				pass = pass && table.setIndex(); 
 			}
 			if (!pass) 
-			{
-				LOGGER.error("获取待复制表配置失败");
-				System.exit(-1);
-			}
+				ErrorHelper.errExit(Infos.GetTableConfigs + Infos.Failed);
 		} catch (Exception e) {
-			LOGGER.error("获取待复制表配置失败" + e.toString());
-			return false;
+			ErrorHelper.errExit(Infos.GetTableConfigs + Infos.Failed + e.toString());
 		}
 		return true;
 	}

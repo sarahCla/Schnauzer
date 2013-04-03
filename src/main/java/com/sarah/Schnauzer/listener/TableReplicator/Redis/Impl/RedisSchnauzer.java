@@ -37,13 +37,14 @@ public class RedisSchnauzer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RedisSchnauzer.class);	
 	
 	public RedisRepTable table = new RedisRepTable();
-	
-	private List<RepField> masterfields = new CopyOnWriteArrayList<RepField>();
-	private List<CheckField> ckfields = new CopyOnWriteArrayList<CheckField>();
-	private ValueField vlfield;
-	private MemberField memfield;
-	private ScoreField scorefield;
+	public List<RepField> masterfields = new CopyOnWriteArrayList<RepField>();
 
+	private List<CheckField> ckfields = new CopyOnWriteArrayList<CheckField>();
+	public ValueField vlfield;
+	public MemberField memfield;
+	public ScoreField scorefield;
+
+	
 	public String getKey(List<Column> columns) {
 		String v = "";
 		List<BaseField> fields = table.getKeyFields();
@@ -137,14 +138,17 @@ public class RedisSchnauzer {
 	}
 	
 	public int getValueIndex() {
+		if (vlfield==null) return -1;
 		return vlfield.fieldindex;
 	}
 	
 	public int getMemberIndex() {
+		if (memfield==null) return -1;
 		return memfield.fieldindex;
 	}
 	
 	public int getScoreIndex() {
+		if (scorefield==null) return -1;
 		return scorefield.fieldindex;
 	}
 	

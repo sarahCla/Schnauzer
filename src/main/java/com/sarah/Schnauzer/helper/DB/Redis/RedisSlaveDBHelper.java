@@ -44,6 +44,15 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 		}
 	}
 	
+	public void zincrby(String key, Double score, String member) {
+		try
+		{
+			conn.zincrby (key, score, member);
+		} catch(Exception e) {
+			ErrorHelper.errExit("zincrby(" + key + "," + score + "," + member + ")" + Infos.Failed );
+		}
+	}
+	
 	public void sadd(String key, String value) {
 		try
 		{
@@ -68,7 +77,7 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 			conn = null;
 			conn = new Jedis(conConfig.host, conConfig.port);
 		}  catch(Exception e) {   
-			LOGGER.error("Redis连接失败2[" + conConfig.host + ":" + conConfig.port + "]" + e.getMessage());
+			LOGGER.error("Redis" + Infos.Connect + Infos.Failed + "[" + conConfig.host + ":" + conConfig.port + "]" + e.getMessage());
 			return false;
 		}
 		return true;

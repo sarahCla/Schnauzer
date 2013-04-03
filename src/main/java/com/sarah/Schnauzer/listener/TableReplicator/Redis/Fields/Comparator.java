@@ -55,7 +55,7 @@ public class Comparator {
 		case MoreOrEqual:		return (v1>=v2);
 		case Equal:  			return (v1==v2);
 		default:
-			ErrorHelper.errExit("待处理的操作符：Operator.cmpAsInt:" + checker);
+			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsInt:" + checker);
 		}
 		return false;
 	}
@@ -70,7 +70,7 @@ public class Comparator {
 		case MoreOrEqual:		return ((v1.compareTo(v2)==1)||(v1.compareTo(v2)==0));
 		case Equal: 			return (v1.compareTo(v2)==0);
 		default:
-			ErrorHelper.errExit("待处理的操作符：Operator.cmpAsBigDecimal:" + checker);
+			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsBigDecimal:" + checker);
 		}
 		return false;
 	}
@@ -85,7 +85,7 @@ public class Comparator {
 		case MoreOrEqual:		return (v1>=v2);
 		case Equal: 			return ((v1-v2)<0.000000001);
 		default:
-			ErrorHelper.errExit("待处理的操作符：Operator.cmpAsDouble:" + checker);
+			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsDouble:" + checker);
 		}
 		return false;
 	}
@@ -100,7 +100,7 @@ public class Comparator {
 		case MoreOrEqual:		return (v1>=v2);
 		case Equal: 			return ((v1-v2)<0.000000001);
 		default:
-			ErrorHelper.errExit("待处理的操作符：Operator.cmpAsFloat:" + checker);
+			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsFloat:" + checker);
 		}
 		return false;
 	}
@@ -116,7 +116,7 @@ public class Comparator {
 		case MoreOrEqual:		return (v1>=v2);
 		case Equal: 			return ((v1-v2)<0.000000001);
 		default:
-			ErrorHelper.errExit("待处理的操作符：Operator.cmpAsLong:" + checker);
+			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsLong:" + checker);
 		}
 		return false;
 	}
@@ -130,7 +130,7 @@ public class Comparator {
 			d2 = format.parse(s2);
 		}
 		catch(ParseException pe) {
-			ErrorHelper.errExit("日期类型转换错误:d1=[" + s1 + "] d2=[" + s2 + "]" + pe.getMessage());
+			ErrorHelper.errExit(String.format(Infos.DateParseError, "YYYY-MM-DD") + " d1=[" + s1 + "] d2=[" + s2 + "] dateFormatStr=[YYYY-MM-DD]" + pe.getMessage());
 		}
 		switch(checker) {
 		case LessThan:			return (d1.before(d2));
@@ -139,7 +139,7 @@ public class Comparator {
 		case MoreOrEqual:		return (d1.after(d2)||(d1.compareTo(d2)==0));
 		case Equal: 			return (d1.compareTo(d2)==0);
 		default:
-			ErrorHelper.errExit("待处理的操作符：Operator.cmpAsDate:" + checker);
+			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsDate:" + checker);
 		}
 		return false;
 	}
@@ -156,10 +156,10 @@ public class Comparator {
 			case MoreOrEqual:		return (d1.after(d2)||(d1.compareTo(d2)==0));
 			case Equal: 			return (d1.compareTo(d2)==0);
 			default:
-				ErrorHelper.errExit("待处理的操作符：Operator.cmpAsDateTime:" + checker);
+				ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsDateTime:" + checker);
 			}
 		} catch (ParseException e) {
-			ErrorHelper.errExit("日期类型转换错误:d1=[" + s1 + "] d2=[" + s2 + "] dateFormatStr=[" + dateFormatStr + "]" + e.getMessage());
+			ErrorHelper.errExit(String.format(Infos.DateParseError, dateFormatStr) + " d1=[" + s1 + "] d2=[" + s2 + "] dateFormatStr=[" + dateFormatStr + "]" + e.getMessage());
 		}		
 		return false;
 	}

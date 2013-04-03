@@ -339,62 +339,64 @@ public class ConfigGetHelper {
 		ckfields.add(field);
 	}
 
-	private void getValueFields(Element elem, List<ValueField> vlfields) {
+	private void getValueField(Element elem, RedisSchnauzer table) {
 		List attrs = elem.attributes();
-		ValueField field = new ValueField();
+		if (table.vlfield!=null)
+			ErrorHelper.errExit("Redis Table " + table.getMasterTableName() + " already have a ValueField ");
+		table.vlfield = new ValueField();
 		String value = "";
 		for (int n1=0; n1<attrs.size(); n1++) 
 		{
 		    Attribute att = (Attribute)attrs.get(n1);
 		    value = att.getValue().trim();
 		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
-		    	field.masterfield = value;
+		    	table.vlfield.masterfield = value;
 		    } else {
 		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisValueField + Infos.IllegalAttr + att.getName());
 		    }
 		}
-		vlfields.add(field);
 	}
 
-	private void getMemberFields(Element elem, List<MemberField> vlfields) {
+	private void getMemberField(Element elem, RedisSchnauzer table) {
 		List attrs = elem.attributes();
-		MemberField field = new MemberField();
+		if (table.memfield!=null)
+			ErrorHelper.errExit("Redis Table " + table.getMasterTableName() + " already have a MemberField ");
+		
+		table.memfield = new MemberField();
 		String value = "";
 		for (int n1=0; n1<attrs.size(); n1++) 
 		{
 		    Attribute att = (Attribute)attrs.get(n1);
 		    value = att.getValue().trim();
 		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
-		    	field.masterfield = value;
+		    	table.memfield.masterfield = value;
 		    } else {
 		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisMemberField + Infos.IllegalAttr + att.getName());
 		    }
 		}
-		vlfields.add(field);
 	}
 	
-	private void getScoreFields(Element elem, List<ScoreField> vlfields) {
+	private void getScoreField(Element elem, RedisSchnauzer table) {
 		List attrs = elem.attributes();
-		ScoreField field = new ScoreField();
+		if (table.scorefield!=null)
+			ErrorHelper.errExit("Redis Table " + table.getMasterTableName() + " already have a ScoreField ");
+		
+		table.scorefield = new ScoreField();
 		String value = "";
 		for (int n1=0; n1<attrs.size(); n1++) 
 		{
 		    Attribute att = (Attribute)attrs.get(n1);
 		    value = att.getValue().trim();
 		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
-		    	field.masterfield = value;
+		    	table.scorefield.masterfield = value;
 		    } else {
 		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisScoreField + Infos.IllegalAttr + att.getName());
 		    }
 		}
-		vlfields.add(field);
 	}
 	
 	private void getRedisTableFields(RedisSchnauzer table, Element elem) {
 		List<CheckField> ckfields = table.getCheckFields();
-		List<ValueField> vlfields = table.getValueFields();
-		List<MemberField> memfields = table.getMemberFields();
-		List<ScoreField> scorefields = table.getScoreFields();
 		
 		String value = "";
 		String tag = "";
@@ -405,11 +407,11 @@ public class ConfigGetHelper {
 			if (StrHelp.TEqual(tag, Tags.RedisCheckField)) 
 				getCheckFields(elemField, ckfields);
 			else if (StrHelp.TEqual(tag, Tags.RedisMemberField))
-				getMemberFields(elemField, memfields);
+				getMemberField(elemField, table);
 			else if (StrHelp.TEqual(tag, Tags.RedisScoreField))
-				getScoreFields(elemField, scorefields);
+				getScoreField(elemField, table);
 			else if (StrHelp.TEqual(tag, Tags.RedisValueField))
-				getValueFields(elemField, vlfields);
+				getValueField(elemField, table);
 		    else
 		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisTable + Infos.IllegalTag + tag);
 		}

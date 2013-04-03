@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.column.BitColumn;
+import com.sarah.Schnauzer.helper.ErrorHelper;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.ITableReplicator;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 
@@ -88,7 +90,6 @@ public class RDBSchnauzer implements ITableReplicator {
 			return this.isUnsignedLongs;
 		this.isUnsignedLongs = new byte[fullfields.size()];
 		for (int i=0; i<this.isUnsignedLongs.length; i++) {
-			//LOGGER.info("{}", fullfields.get(i));
 			this.isUnsignedLongs[i] = 0;
 			if (fullfields.get(i).isUnsignedLong)
 				this.isUnsignedLongs[i] = 1;
@@ -131,11 +132,8 @@ public class RDBSchnauzer implements ITableReplicator {
 			}
 		}
 		for (int n=0; n<this.keyFieldIndexs.length; n++) {
-			if (this.keyFieldIndexs[n]<0) 
-			{	
-				LOGGER.error("没有找到KeyField的对应列[" + this.keyfields[n] + "]，请检查配置 " + s );
-				return false;
-			}
+			if (this.keyFieldIndexs[n]>=0) continue; 
+			ErrorHelper.errExit(String.format(Infos.CanNotFoundKeyField + s, this.keyfields[n]));
 		}
 		return true;
 	}
@@ -208,7 +206,7 @@ public class RDBSchnauzer implements ITableReplicator {
 	@Override
 	public boolean needReplicate(List<Column> columns) {
 		if (this.checkFieldIndex<0)	return true;
-		LOGGER.info("检测值=" + columns.get(this.checkFieldIndex).toString());
+		LOGGER.info(Infos.CheckValue + "=" + columns.get(this.checkFieldIndex).toString());
 		return (columns.get(this.checkFieldIndex).toString().equalsIgnoreCase(this.needrepvalue));
 	}
 
