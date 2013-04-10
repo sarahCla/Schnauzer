@@ -26,4 +26,5 @@ public interface RedisRepTableAttr {
 	String SlaveKey = "SlaveKey";
 	String KeyField = "KeyField";
 	String DataType = "DataType";
+	String SQL = "SQL";
 }

@@ -26,8 +26,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class BaseField {
 	public  String     masterfield = "";
 	public  int       fieldtype = -1;       //int result = this.colTypes[index] & 0xff;
-	public  int       fieldindex = -1;
-
+	public  int       fieldindex = -1;	 
+	
 	public BaseField() {
 		
 	}

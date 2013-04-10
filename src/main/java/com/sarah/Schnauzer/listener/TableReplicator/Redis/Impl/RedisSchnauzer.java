@@ -43,6 +43,18 @@ public class RedisSchnauzer {
 	public ValueField vlfield;
 	public MemberField memfield;
 	public ScoreField scorefield;
+	
+	/*for implement the redis data initiate*/
+	public String binlogfile = "";
+	public int pos = 0;
+	
+	public void setSQL(String v) {
+		this.table.SQL = v;
+	}
+	
+	public String getSQL() {
+		return this.table.SQL;
+	}
 
 	public RepField getMasterField(int index) {
 		if (index<0) return null;

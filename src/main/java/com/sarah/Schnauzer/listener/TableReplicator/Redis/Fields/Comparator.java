@@ -49,11 +49,11 @@ public class Comparator {
 		int v1 = Integer.parseInt(s1);
 		int v2 = Integer.parseInt(s2);
 		switch(checker) {
-		case LessThan:   		return (v1<v2);
-		case LessOrEqual:  	    return (v1<=v2);
-		case MoreThan:			return (v1>v2);
-		case MoreOrEqual:		return (v1>=v2);
-		case Equal:  			return (v1==v2);
+		case LESSTHAN:   		return (v1<v2);
+		case LESSOREQUAL:  	    return (v1<=v2);
+		case MORETHAN:			return (v1>v2);
+		case MOREOREQUAL:		return (v1>=v2);
+		case EQUAL:  			return (v1==v2);
 		default:
 			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsInt:" + checker);
 		}
@@ -64,11 +64,11 @@ public class Comparator {
 		BigDecimal v1 = new BigDecimal(s1);
 		BigDecimal v2 = new BigDecimal(s2);
 		switch(checker) {
-		case LessThan:			return (v1.compareTo(v2)==-1);
-		case LessOrEqual:		return ((v1.compareTo(v2)==-1)||(v1.compareTo(v2)==0));
-		case MoreThan:			return (v1.compareTo(v2)==1);
-		case MoreOrEqual:		return ((v1.compareTo(v2)==1)||(v1.compareTo(v2)==0));
-		case Equal: 			return (v1.compareTo(v2)==0);
+		case LESSTHAN:			return (v1.compareTo(v2)==-1);
+		case LESSOREQUAL:		return ((v1.compareTo(v2)==-1)||(v1.compareTo(v2)==0));
+		case MORETHAN:			return (v1.compareTo(v2)==1);
+		case MOREOREQUAL:		return ((v1.compareTo(v2)==1)||(v1.compareTo(v2)==0));
+		case EQUAL: 			return (v1.compareTo(v2)==0);
 		default:
 			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsBigDecimal:" + checker);
 		}
@@ -79,11 +79,11 @@ public class Comparator {
 		Double v1 = Double.parseDouble(s1);
 		Double v2 = Double.parseDouble(s2);
 		switch(checker) {
-		case LessThan:			return (v1<v2);
-		case LessOrEqual:		return (v1<=v2);
-		case MoreThan:			return (v1>v2);
-		case MoreOrEqual:		return (v1>=v2);
-		case Equal: 			return ((v1-v2)<0.000000001);
+		case LESSTHAN:			return (v1<v2);
+		case LESSOREQUAL:		return (v1<=v2);
+		case MORETHAN:			return (v1>v2);
+		case MOREOREQUAL:		return (v1>=v2);
+		case EQUAL: 			return ((v1-v2)<0.000000001);
 		default:
 			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsDouble:" + checker);
 		}
@@ -94,11 +94,11 @@ public class Comparator {
 		Float v1 = Float.parseFloat(s1);
 		Float v2 = Float.parseFloat(s2);
 		switch(checker) {
-		case LessThan:			return (v1<v2);
-		case LessOrEqual:		return (v1<=v2);
-		case MoreThan:			return (v1>v2);
-		case MoreOrEqual:		return (v1>=v2);
-		case Equal: 			return ((v1-v2)<0.000000001);
+		case LESSTHAN:			return (v1<v2);
+		case LESSOREQUAL:		return (v1<=v2);
+		case MORETHAN:			return (v1>v2);
+		case MOREOREQUAL:		return (v1>=v2);
+		case EQUAL: 			return ((v1-v2)<0.000000001);
 		default:
 			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsFloat:" + checker);
 		}
@@ -110,11 +110,11 @@ public class Comparator {
 		Long v1 = Long.parseLong(s1);
 		Long v2 = Long.parseLong(s2);
 		switch(checker) {
-		case LessThan:			return (v1<v2);
-		case LessOrEqual:		return (v1<=v2);
-		case MoreThan:			return (v1>v2);
-		case MoreOrEqual:		return (v1>=v2);
-		case Equal: 			return ((v1-v2)<0.000000001);
+		case LESSTHAN:			return (v1<v2);
+		case LESSOREQUAL:		return (v1<=v2);
+		case MORETHAN:			return (v1>v2);
+		case MOREOREQUAL:		return (v1>=v2);
+		case EQUAL: 			return ((v1-v2)<0.000000001);
 		default:
 			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsLong:" + checker);
 		}
@@ -133,11 +133,11 @@ public class Comparator {
 			ErrorHelper.errExit(String.format(Infos.DateParseError, "YYYY-MM-DD") + " d1=[" + s1 + "] d2=[" + s2 + "] dateFormatStr=[YYYY-MM-DD]" + pe.getMessage());
 		}
 		switch(checker) {
-		case LessThan:			return (d1.before(d2));
-		case LessOrEqual:		return (d1.before(d2)||(d1.compareTo(d2)==0));
-		case MoreThan:			return (d1.after(d2));
-		case MoreOrEqual:		return (d1.after(d2)||(d1.compareTo(d2)==0));
-		case Equal: 			return (d1.compareTo(d2)==0);
+		case LESSTHAN:			return (d1.before(d2));
+		case LESSOREQUAL:		return (d1.before(d2)||(d1.compareTo(d2)==0));
+		case MORETHAN:			return (d1.after(d2));
+		case MOREOREQUAL:		return (d1.after(d2)||(d1.compareTo(d2)==0));
+		case EQUAL: 			return (d1.compareTo(d2)==0);
 		default:
 			ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsDate:" + checker);
 		}
@@ -150,11 +150,11 @@ public class Comparator {
 			Date d1 = new SimpleDateFormat(dateFormatStr, Locale.US).parse(s1);
 			Date d2 = format.parse(s2);	    	  
 			switch(checker) {
-			case LessThan:			return (d1.before(d2));
-			case LessOrEqual:		return (d1.before(d2)||(d1.compareTo(d2)==0));
-			case MoreThan:			return (d1.after(d2));
-			case MoreOrEqual:		return (d1.after(d2)||(d1.compareTo(d2)==0));
-			case Equal: 			return (d1.compareTo(d2)==0);
+			case LESSTHAN:			return (d1.before(d2));
+			case LESSOREQUAL:		return (d1.before(d2)||(d1.compareTo(d2)==0));
+			case MORETHAN:			return (d1.after(d2));
+			case MOREOREQUAL:		return (d1.after(d2)||(d1.compareTo(d2)==0));
+			case EQUAL: 			return (d1.compareTo(d2)==0);
 			default:
 				ErrorHelper.errExit(Infos.Operators2Handle + ": Operator.cmpAsDateTime:" + checker);
 			}

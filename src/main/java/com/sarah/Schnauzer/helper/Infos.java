@@ -23,11 +23,16 @@ package com.sarah.Schnauzer.helper;
 public interface Infos {
 	String Failed = "失败";
 	String OK = "成功";
+	String Illegal = "无效";
+	
 	String Connect = "连接";
 	String Get = "获取";
+	String Start = "开启";
+	String Init = "初始化";
+	
 	String IllegalAttr = "无效属性:";
 	String IllegalTag = "无效标签:";
-	String Illegal = "无效";
+
 	String ConMaster = "连接Master数据库";
 	String ConSlave = "连接Slave数据库";
 	String ConDB = "数据库连接";
@@ -45,6 +50,7 @@ public interface Infos {
 	String DoUpdate = "更新语句";
 	String Create = "生成";
 	String SendErrorInfo = "出错信息包发送。。。";
+	String SendHeartBeat = "发送心跳包。。。";
 	String RepFailed = "【复制故障】"; 
 	String Row = "行";
 	String AutoSetPos = "自动更新位置";
@@ -60,5 +66,13 @@ public interface Infos {
 	String Operators2Handle = "待处理操作符";
 	String CanNotFoundKeyField = "没有找到KeyField的对应列[{}]，请检查配置 ";
 	String TableStructure = "表结构";
-	
+	String NeedRecon = "由于长时间没有通讯，数据库需要重新连接";
+	String DataSet = "数据集";
+	String SysInfo = "系统信息";
+	String NeedRetry = "遇到问题，等待5分钟后重连";
+	String Recon = "重新连接";
+	String MailSend = "报警邮件发送";
+	String Operator = "操作符";
+	String RecordNotFound = "下面的语句没有找到对应记录";
+	String SQLNotFound = "找不到对应的SQL语句：";	
 }

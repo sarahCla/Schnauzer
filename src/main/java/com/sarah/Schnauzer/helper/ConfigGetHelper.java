@@ -313,6 +313,7 @@ public class ConfigGetHelper {
 		    else if (isEqual(att, RedisRepTableAttr.SlaveKey ))    table.setSlaveKey(value);
 		    else if (isEqual(att, RedisRepTableAttr.DataType))   	table.setDataType(value);
 		    else if (isEqual(att, RedisRepTableAttr.KeyField)) 	    table.setKeyFields(value);
+		    else if (isEqual(att, RedisRepTableAttr.SQL))          table.setSQL(value);
 		    else
 		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->Table" + Infos.IllegalAttr + att.getName());
 		}
@@ -387,8 +388,10 @@ public class ConfigGetHelper {
 		{
 		    Attribute att = (Attribute)attrs.get(n1);
 		    value = att.getValue().trim();
-		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
+		    if (isEqual(att, RedisScoreFieldAttr.MasterField)) {
 		    	table.scorefield.masterfield = value;
+		    } else if (isEqual(att, RedisScoreFieldAttr.Multiplier)) {
+		    	table.scorefield.multiplier = Double.parseDouble(value);
 		    } else {
 		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisScoreField + Infos.IllegalAttr + att.getName());
 		    }

@@ -5,6 +5,7 @@ import java.sql.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.DB.AbstractDbHelper;
 
 /**
@@ -61,7 +62,7 @@ public class MySQLDbHelper extends AbstractDbHelper {
 	            {
 	                if ((res[i]<=0) && (res[i]!=-2))
 	                {
-	                	errInfo[0] = "下面的语句没有找到对应记录: " + sql[i];  
+	                	errInfo[0] = Infos.RecordNotFound + ":" + sql[i];  
 	                    stmt.executeUpdate("ROLLBACK;");  
 	                    return false;
 	                }

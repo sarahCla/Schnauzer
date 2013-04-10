@@ -29,7 +29,8 @@ public class RedisRepTable {
 	private List<BaseField> keyfields = new CopyOnWriteArrayList<BaseField>();
 	public String MasterTable = "";
 	public String SlaveKey = "";
-	public RedisStructure type = null; 
+	public RedisStructure type = null;
+	public String SQL = "";
 	
 	public void setKeyFiels(String keyFields) {
 		keyfields.clear();

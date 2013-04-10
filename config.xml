@@ -1,5 +1,95 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Schnauzer>
+<MasterDBInfo Host="192.168.12.247" port="3306" user="root" pwd="247" dbname="test" serverid="1" />
+<SlaveDBInfo Host="192.168.10.50" port="6379" type="redis"/>
+<WarmingSendMailList>
+	<Mail>yifei.wang@163.com</Mail>
+</WarmingSendMailList>
+<RedisRepTableList>
+	<Table MasterTable="dlya" SlaveKey="A:P:ID&#61;" KeyField="profileid" DataType="Set" 
+		SQL="select profileid, period, count&#40;*&#41; 
+		     from dlya 
+		     where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143"/>
+		<ValueField MasterField="period"/>
+	</Table>
+	<Table MasterTable="dlya" SlaveKey="A:P:P:ID&#61;" KeyField="profileid" DataType="SortedSet"
+		SQL="select profileid, period as member, sum&#40;total&#41; 
+		     from dlya 
+				 where vchtype in &#40; 34, 6, 66, 73, 28,143 &#41; 
+				   and atypeid in &#40; 34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36 &#41; 
+				   and usedtype &#60; 10 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="34, 6, 66, 73, 28,143" Operator="in"/>
+		<CheckField MasterField="atypeid" Value="34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36" Operator="IN"/>
+		<CheckField MasterField="usedtype" Value="10" Operator="LessThan"/>
+		<MemberField MasterField="period"/>
+		<ScoreField MasterField="total"/>
+	</Table>
+	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"
+		SQL="select profileid, period, sum&#40;CostTotal&#41; 
+		     from dlysale 
+				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
+		<MemberField MasterField="period"/>
+		<ScoreField MasterField="costTotal"/>
+	</Table>
+	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"
+		SQL="select profileid, period, -1*sum&#40;tpTotal&#41; 
+		     from dlysale 
+				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
+		<MemberField MasterField="period"/>
+		<ScoreField MasterField="tpTotal" Multiplier="-1"/>
+	</Table>
+</RedisRepTableList>
+<!--RedisRepTableList>
+	<Table MasterTable="dlya" SlaveKey="凭证明细表:按期间分组:profiledid" KeyField="profileid" DataType="Set" 
+		SQL="select profileid, period, count&#40;*&#41; 
+		     from dlya 
+		     where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143"/>
+		<ValueField MasterField="period"/>
+	</Table>
+	<Table MasterTable="dlya" SlaveKey="凭证明细表:按期间分组:付款总额:profiledid" KeyField="profileid" DataType="SortedSet"
+		SQL="select profileid, period as member, sum&#40;total&#41; 
+		     from dlya 
+				 where vchtype in &#40; 34, 6, 66, 73, 28,143 &#41; 
+				   and atypeid in &#40; 34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36 &#41; 
+				   and usedtype &#60; 10 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="34, 6, 66, 73, 28,143" Operator="in"/>
+		<CheckField MasterField="atypeid" Value="34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36" Operator="IN"/>
+		<CheckField MasterField="usedtype" Value="10" Operator="LessThan"/>
+		<MemberField MasterField="period"/>
+		<ScoreField MasterField="total"/>
+	</Table>
+	<Table MasterTable="dlysale" SlaveKey="销售明细表:按期间分组:销售总额:profiledid" KeyField="profileid" DataType="SortedSet"
+		SQL="select profileid, period, sum&#40;CostTotal&#41; 
+		     from dlysale 
+				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
+		<MemberField MasterField="period"/>
+		<ScoreField MasterField="costTotal"/>
+	</Table>
+	<Table MasterTable="dlysale" SlaveKey="销售明细表:按期间分组:销售总额:profiledid" KeyField="profileid" DataType="SortedSet"
+		SQL="select profileid, period, -1*sum&#40;tpTotal&#41; 
+		     from dlysale 
+				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
+				 group by profileid, period ">
+		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
+		<MemberField MasterField="period"/>
+		<ScoreField MasterField="tpTotal" Multiplier="-1"/>
+	</Table>
+</RedisRepTableList-->
+</Schnauzer>
+<!--?xml version="1.0" encoding="utf-8"?>
+<Schnauzer>
 <MasterDBInfo Host="127.0.0.1" port="3306" user="root" pwd="xxxx" dbname="test" serverid="1"/>
 <SlaveDBInfo Host="127.0.0.1"  port="3306" user="root" pwd="xxxx" dbname="test3" type="mysql" SerailNo="75EA" MasterID="3"/>
 <HeartBeat Host="192.168.12.162" port="60002" Interval="600000" />
@@ -9,4 +99,4 @@
 <RepTableList> 
 	<Table MasterTable="TT2" SlaveTable="TT2" KeyField="id"  heterogeneous="false" mergedTable="true"/>
 </RepTableList>
-</Schnauzer>
+</Schnauzer-->

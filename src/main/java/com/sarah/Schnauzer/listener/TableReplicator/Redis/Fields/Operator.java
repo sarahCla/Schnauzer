@@ -20,4 +20,4 @@ package com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields;
  * 
  * @author SarahCla
  */
-public enum Operator{ IN, NotIn, LessThan, LessOrEqual, MoreThan, MoreOrEqual, Equal, IsEmpty, IsNull }
+public enum Operator{ IN, NOTIN, LESSTHAN, LESSOREQUAL, MORETHAN, MOREOREQUAL, EQUAL, ISEMPTY, ISNULL }

@@ -20,6 +20,7 @@ import java.sql.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Infos;
 
 /**
  * 
@@ -51,13 +52,14 @@ public abstract class AbstractDbHelper implements IDbHelper {
 			if (!this.conConfig.driver.isEmpty()) 
 				Class.forName(this.conConfig.driver);
 			if ((conn!=null) && (!conn.isClosed())) {
-				if ((conConfig.isSQLServer2000()) || (conn.isValid(waittime))) return true;
-				LOGGER.info("由于长时间没有通讯，数据库需要重新连接");
+				if (conConfig.isSQLServer2000()) return true;
+				if (conn.isValid(waittime)) return true;
+				LOGGER.info(Infos.NeedRecon);
 			}
 			conn = DriverManager.getConnection(conConfig.getURL(), conConfig.user, conConfig.pwd);
-			LOGGER.info("连接数据库：" + this.conConfig.getURL());
+			LOGGER.info(Infos.ConDB + ":" + this.conConfig.getURL());
 		} catch(Exception e) {   
-			LOGGER.error("数据库连接失败2[" + this.conConfig.getURL() + "]" + e.getMessage());
+			LOGGER.error(Infos.ConDB + "[" + this.conConfig.getURL() + "]" + Infos.Failed + e.getMessage());
 			return false;
 		}   
 		return true;
@@ -89,7 +91,7 @@ public abstract class AbstractDbHelper implements IDbHelper {
 			statement = conn.createStatement();
 			rs = statement.executeQuery(sql);
 		} catch (Exception e) {
-			LOGGER.error("获取数据集错误：" + e.getMessage());
+			LOGGER.error( Infos.Get + Infos.DataSet + ":" + e.getMessage());
 		}
 		return rs;
 	}

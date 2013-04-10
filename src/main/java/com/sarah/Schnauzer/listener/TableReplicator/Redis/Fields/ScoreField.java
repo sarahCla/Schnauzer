@@ -21,5 +21,5 @@ package com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields;
  * @author SarahCla
  */
 public class ScoreField extends BaseField{
-
+	public  Double     multiplier = 1.0;
 }

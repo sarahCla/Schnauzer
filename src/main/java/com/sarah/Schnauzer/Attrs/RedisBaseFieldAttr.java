@@ -21,5 +21,5 @@ package com.sarah.Schnauzer.Attrs;
  * @author SarahCla
  */
 public interface RedisBaseFieldAttr {
-	String MasterField = "MasterField";
+	String MasterField = "MasterField";	
 }

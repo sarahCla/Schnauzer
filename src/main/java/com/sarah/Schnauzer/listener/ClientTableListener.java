@@ -42,10 +42,10 @@ public class ClientTableListener implements BinlogEventListener {
 	private IMaster slave;
 	
 	
-	public ClientTableListener(DBConnectorConfig masterdb, DBConnectorConfig slavedb) 
+	public ClientTableListener(DBConnectorConfig masterdb, DBConnectorConfig slavedb, String args[]) 
 	{
 		if (slavedb.isRedis()) 
-			this.slave = new SchnauzerRedisMaster(masterdb, slavedb);
+			this.slave = new SchnauzerRedisMaster(masterdb, slavedb, args);
 		else
 			this.slave = new SchnauzerRDBMaster(masterdb, slavedb);
 		helper.dateFormatStr = masterdb.DateFormat;
@@ -58,6 +58,7 @@ public class ClientTableListener implements BinlogEventListener {
 		helper.databaseName = event.getDatabaseName().toString();
 		helper.position = event.getHeader().getNextPosition();
 		helper.tableMapPos = event.getHeader().getPosition();
+		//helper.binlogFileName = event.getHeader().get 
 	}
 	
 

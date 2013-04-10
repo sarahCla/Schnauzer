@@ -68,7 +68,7 @@ public class SchnauzerRunner {
 		HeartBeatInfo hinfo = new HeartBeatInfo();
 		conf.getHeartBeatSet(hinfo);			
 		if (hinfo.port>0 && !hinfo.host.isEmpty()) {
-			LOGGER.info("开启心跳包发送。。。");
+			LOGGER.info(Infos.Start + Infos.SendHeartBeat);
 			hinfo.SerialNo = info.getSNStr();
 			beatSender = new HeartBeatSender(masterConfig, slaveConfig, hinfo);
 			beatSender.start();
@@ -79,7 +79,7 @@ public class SchnauzerRunner {
 		LocalInfo info = LocalInfoGetter.getLocalInfo();
 		DBConnectorConfig masterConfig = new DBConnectorConfig();
 		DBConnectorConfig slaveConfig = new DBConnectorConfig(info);
-		LOGGER.info("系统信息：" + info.toString());
+		LOGGER.info(Infos.SysInfo + ":" + info.toString());
 		HeartBeatSender beatSender = null;
 		try
 		{
@@ -97,7 +97,7 @@ public class SchnauzerRunner {
 			
 			final OpenReplicator or = new OpenReplicator();
 			or.setMasterAndSlave(masterConfig, slaveConfig);
-			or.setBinlogEventListener(new ClientTableListener(masterConfig, slaveConfig));
+			or.setBinlogEventListener(new ClientTableListener(masterConfig, slaveConfig, args));
 			or.start();
 			
 			final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -135,9 +135,9 @@ public class SchnauzerRunner {
 			} catch (org.apache.commons.lang.exception.NestableRuntimeException e) {
 				LOGGER.error("catch an exception");
 			}
-			LOGGER.info("遇到问题，等待5分钟后重连");
+			LOGGER.info(Infos.NeedRetry);
 			Thread.sleep(5*60*1000);
-			LOGGER.info("开始重连");
+			LOGGER.info(Infos.Recon);
 		}
 	}
 }

@@ -21,6 +21,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.code.or.common.util.MySQLConstants;
+import com.sarah.Schnauzer.helper.Infos;
 
 /**
  * 
@@ -49,7 +50,7 @@ public class CheckField extends BaseField {
 	private Operator str2Op(String s) {
 		Operator o = null;
 		try {
-			o = Operator.valueOf(s);
+			o = Operator.valueOf(s.toUpperCase());
 		} catch(Exception e) {
 			return null;
 		}
@@ -66,7 +67,7 @@ public class CheckField extends BaseField {
 	public void setOperator(String s) {
 		checker = str2Op(s);
 		if (checker==null) {
-			LOGGER.error("无效的操作符: " + s);
+			LOGGER.error(Infos.Illegal + Infos.Operator + ":" + s);
 			System.exit(-1);
 		}
 	}
@@ -118,16 +119,16 @@ public class CheckField extends BaseField {
 		String v = value.trim();
 		switch(checker) {
 		case IN :				return Comparator.existIn(v, valuelist);			
-		case NotIn :			return Comparator.notExitIn(v, valuelist);
+		case NOTIN :			return Comparator.notExitIn(v, valuelist);
 		
-		case LessThan :
-		case MoreThan :
-		case LessOrEqual :
-		case MoreOrEqual :
-		case Equal :			return opPass(v);
+		case LESSTHAN :
+		case MORETHAN :
+		case LESSOREQUAL :
+		case MOREOREQUAL :
+		case EQUAL :			return opPass(v);
 		
-		case IsEmpty :
-		case IsNull:			return (v.isEmpty());
+		case ISEMPTY :
+		case ISNULL:			return (v.isEmpty());
 		
 		default:  			    return false;
 		}

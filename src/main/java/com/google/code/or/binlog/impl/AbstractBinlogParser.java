@@ -41,6 +41,7 @@ import com.google.code.or.binlog.impl.event.RotateEvent;
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.binlog.impl.parser.NopEventParser;
 import com.google.code.or.common.util.XThreadFactory;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.WarmingMailHelper;
 
 /**
@@ -252,9 +253,9 @@ public abstract class AbstractBinlogParser implements BinlogParser {
 				WarmingMailHelper mailsender;	
 				try {
 					mailsender = new WarmingMailHelper("Config.xml");
-					mailsender.send("【复制故障】" + InetAddress.getLocalHost().toString(), e.toString());
+					mailsender.send(Infos.RepFailed + InetAddress.getLocalHost().toString(), e.toString());
 				} catch (Exception e2) {
-					LOGGER.info("故障邮件发送失败: " + e2.toString());
+					LOGGER.info(Infos.MailSend + Infos.Failed + ":" + e2.toString());
 				}
 				
 			} finally {

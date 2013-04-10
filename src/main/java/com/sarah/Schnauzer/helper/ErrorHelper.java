@@ -16,13 +16,20 @@
  */
 package com.sarah.Schnauzer.helper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.CheckField;
+
 /**
 * @author SarahCla
 */
 public class ErrorHelper {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHelper.class);
+	
 	public static void errExit(String info) {
 		WarmingMailHelper mailsender = new WarmingMailHelper("Config.xml");
 		mailsender.send("【复制故障】", info);
+		LOGGER.error("【复制故障】" + info);
 		System.exit(-1);
 	}
 	
