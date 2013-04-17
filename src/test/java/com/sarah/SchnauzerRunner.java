@@ -97,7 +97,8 @@ public class SchnauzerRunner {
 			
 			final OpenReplicator or = new OpenReplicator();
 			or.setMasterAndSlave(masterConfig, slaveConfig);
-			or.setBinlogEventListener(new ClientTableListener(masterConfig, slaveConfig, args));
+			ClientTableListener listener = new ClientTableListener(masterConfig, slaveConfig, args);
+			or.setBinlogEventListener(listener);
 			or.start();
 			
 			final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

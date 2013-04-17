@@ -38,17 +38,18 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(RedisSlaveDBHelper.class);
 	
-	protected Jedis conn;
+	protected static Jedis conn;
 	protected DBConnectorConfig conConfig;
 	
 	private int sysdb = 0;
 	private int datadb = 1;
 	
+	public Boolean noLog = false; 
+	
 	public void flushDataDB() {
 		try
 		{
-			conn = null;
-			conn = new Jedis(conConfig.host, conConfig.port);
+			doOpen();
 			conn.select(datadb);
 			conn.flushDB();
 		} catch(Exception e) {
@@ -75,18 +76,14 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 	public void setBinlogKey(String binlog, String pos, String table) {
 		try
 		{
-			conn = null;
-			conn = new Jedis(conConfig.host, conConfig.port);
+			doOpen();
 			conn.select(sysdb);
 			String key = getBinlogKeyStr();
 			conn.set(key, binlog);
-			LOGGER.info("redis.set " + key + " " + binlog);
 			key = getPosKeyStr();
 			conn.set(key, pos);
-			LOGGER.info("redis.set " + key + " " + pos);
 			key = getPreTableKeyStr();
 			conn.set(key, table);
-			LOGGER.info("redis.set " + key + " " + table);
 		} catch(Exception e) {
 			ErrorHelper.errExit(Infos.SetPos + Infos.Failed + ":" + e.getMessage());
 		}
@@ -95,9 +92,11 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 	public void zincrby(String key, Double score, String member) {
 		try
 		{
+			doOpen();
 			conn.select(datadb);
 			conn.zincrby (key, score, member);
-			//LOGGER.info("zincrby " + key + " " + member + " " + score);
+			if (!noLog)
+				LOGGER.info("zincrby " + key + " " + member + " " + score);
 		} catch(Exception e) {
 			ErrorHelper.errExit("zincrby(" + key + "," + score + "," + member + ")" + Infos.Failed );
 		}
@@ -106,6 +105,7 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 	public void sadd(String key, String value) {
 		try
 		{
+			doOpen();
 			conn.select(datadb);
 			conn.sadd(key, value);
 			LOGGER.info("sadd " + key + " " + value);
@@ -119,11 +119,20 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 	public boolean doOpen() {
 		boolean isOpened = false;
 		try {
+			if (conn==null)
+				conn = new Jedis(conConfig.host, conConfig.port);
+		}  catch(Exception e) {   
+			LOGGER.error("Redis" + Infos.Connect + Infos.Failed + "[" + conConfig.host + ":" + conConfig.port + "]" + e.getMessage());
+			return false;
+		}
+		
+		try {
 			String binlog = conn.get(getBinlogKeyStr());
 			isOpened = true;
 		} catch(Exception e) {
 			isOpened = false;
 		}
+		
 		if (isOpened) return true;
 		try {
 			conn = null;
@@ -166,8 +175,7 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 		SlaveStatus result = null;
 		try
 		{
-			conn = null;
-			conn = new Jedis(conConfig.host, conConfig.port);
+			doOpen();
 			conn.select(sysdb);
 			String key = getBinlogKeyStr();
 			String binlog = conn.get(key);

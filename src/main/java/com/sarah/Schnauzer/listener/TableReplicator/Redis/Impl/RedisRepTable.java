@@ -34,6 +34,7 @@ public class RedisRepTable {
 	
 	public void setKeyFiels(String keyFields) {
 		keyfields.clear();
+		if (keyFields.equals("")) return;
 		String[] fields = keyFields.split(",");
 		for (int i=0; i<fields.length; i++) {
 			BaseField field = new BaseField(fields[i]);
@@ -43,5 +44,9 @@ public class RedisRepTable {
 	
 	public List<BaseField> getKeyFields() {
 		return keyfields;
+	}
+	
+	public Boolean haveKeyFields() {
+		return keyfields.size()>0;
 	}
 }

@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.ErrorHelper;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.helper.DB.AbstractDbHelper;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
@@ -49,9 +51,7 @@ public class MySQLSlaveDbHelper extends MySQLDbHelper implements ISlaveDbHelper 
 				result = new SlaveStatus(rt.getString(Tags.binlog), rt.getInt(Tags.pos), conConfig.masterID);
 			} 
 		}catch(SQLException e) {
-			String err = "masterID=" + conConfig.masterID + "对应的记录在" + Tags.repTable +"表中不存在";
-			LOGGER.error(err);
-			throw new Exception(err);
+			ErrorHelper.errExit(String.format(Infos.NoMasterRecord, conConfig.masterID, Tags.repTable));
 		}
 		return result;
 	}

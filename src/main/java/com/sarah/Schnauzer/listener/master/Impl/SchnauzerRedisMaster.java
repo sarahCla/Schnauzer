@@ -75,16 +75,46 @@ public class SchnauzerRedisMaster  implements IMaster {
 		this.slaveDb = slave;
 		this.masterDb = master;
 		dbhelper = new RedisSlaveDBHelper(slaveDb);
+		dbhelper.noLog = true;
 		registgerTableReplicator(master);
-		needInitData = (args.length>0) && (args[0].equalsIgnoreCase("ReloadData"));
-		//if (needInitData) 
-		doInitiate();
-		ErrorHelper.errExit("Down");
+		//needInitData = (args.length>0) && (args[0].equalsIgnoreCase("ReloadData"));
+		needInitData = true;
+		if (needInitData) 
+		{
+			doInitiate();
+			getTheLastBinlogAndPos();
+			LOGGER.info("ReloadData" + Infos.OK);
+		}
+		dbhelper.noLog = false;
 	}
 	
 	
 	private void getTheLastBinlogAndPos() {
-		
+		try
+		{
+			MySQLDbHelper mhelper = new MySQLDbHelper(masterDb);
+			ResultSet rs = mhelper.getRS("show master logs");
+			String binlog = "";
+			Long pos = 0L;
+			while(rs.next())
+			{
+				binlog = rs.getString("log_name");	
+			}
+			rs.close();
+			rs = mhelper.getRS("show binlog events in '" + binlog + "'");
+			while(rs.next())
+			{
+				pos = rs.getLong("pos");	
+			}
+			rs.close();
+			masterDb.binlog = binlog;
+			masterDb.pos = pos;
+			slaveDb.binlog = binlog;
+			slaveDb.pos = pos;
+			
+		} catch(Exception e) {
+			ErrorHelper.errExit("Get binlog filename " + Infos.Failed + ": " + e.getMessage());
+		}
 	}
 	
 	private void initSet(RedisSchnauzer table, ResultSet rs) {
@@ -96,25 +126,32 @@ public class SchnauzerRedisMaster  implements IMaster {
 			String member = "";
 			Double score = 0.0;
 			int rowCount = 0;
+			Boolean haveKey = table.table.haveKeyFields();
 			while(rs.next()) {
-				key = rs.getString(1);
-				member = rs.getString(2);
-				score = rs.getDouble(3);
+				if (haveKey) {
+					key = rs.getString(1);
+					member = rs.getString(2);
+					score = rs.getDouble(3);
+				} else {
+					key = "";
+					member = rs.getString(1);
+					score = rs.getDouble(2);
+				}
 				dbhelper.zincrby(preKey+key, score, member);
 				rowCount = rowCount+1;
 			}
 			LOGGER.info("load " + preKey + " OK. rowcount=" + rowCount);
 			rs.close();
 		} catch(Exception e) {
-			ErrorHelper.errExit(Infos.Init + "RedisData" + Infos.Failed + ": " + table.table.SlaveKey + ": " + e.getMessage());
+			ErrorHelper.errExit(LOGGER.getName() + Infos.Init + "RedisData" + Infos.Failed + ": " + table.table.SlaveKey + ": " + e.getMessage());
 		}
 	}
 
-	/*execute sql to get the initiate data*/
 	private void doInitiate() {
 		try
 		{
 			dbhelper.flushDataDB();
+			LOGGER.info("Redis flushdb " + Infos.OK);
 			String sql = "";
 			MySQLDbHelper mhelper = new MySQLDbHelper(masterDb);
 			for(int i=0; i<tables.size(); i++) {
@@ -171,7 +208,10 @@ public class SchnauzerRedisMaster  implements IMaster {
 				if (!haveCol) {
 					ErrorHelper.errExit(String.format(Infos.TableNotExist, table.getMasterTableName(), masterDb.dbname));
 				}
+				rs.close();
+				LOGGER.info("regist " + table.table.SlaveKey + Infos.OK);
 			}
+			
 		} catch (Exception e) {
 			LOGGER.error(Infos.GetTableConfigs + Infos.Failed + e.toString());
 			return false;
@@ -184,8 +224,8 @@ public class SchnauzerRedisMaster  implements IMaster {
 	private void innerWrite(ColumnTypeHelper helper, WriteRowsEvent event, RedisSchnauzer table) throws UnsupportedEncodingException {
 		List<Row> rows = event.getRows();
 		LOGGER.info(rows.size() + Infos.Row);
-		int scoreIndex = table.getMemberIndex();
-		int memberIndex = table.getScoreIndex();
+		int memberIndex = table.getMemberIndex();
+		int scoreIndex = table.getScoreIndex();
 		int valueIndex = table.getValueIndex();
 		Double score = 0.0;
 		String member = "";
@@ -197,8 +237,9 @@ public class SchnauzerRedisMaster  implements IMaster {
 			if (!table.needReplicate(columns, helper)) continue;
 			switch(table.getType()) {
 			case Set :
+				score = 1.0;
 				value = helper.getColStr(valueIndex, columns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
-				dbhelper.sadd(table.getKey(columns), value);
+				dbhelper.zincrby(table.getKey(columns), score, value);
 				dbhelper.setBinlogKey(getBinLogName(helper), Long.toString(helper.position), helper.tableName);
 				break;
 			case SortedSet:
@@ -231,7 +272,7 @@ public class SchnauzerRedisMaster  implements IMaster {
 				try {
 					innerWrite(helper, event, table);
 				} catch(Exception e) {
-					ErrorHelper.errExit(Infos.DoInsert + Infos.Failed + e.getMessage());
+					ErrorHelper.errExit("[" + table.table.SlaveKey + "]" + Infos.DoInsert + Infos.Failed + e.getMessage());
 				}
 			}
 			

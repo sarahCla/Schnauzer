@@ -65,7 +65,7 @@ public class RedisSchnauzer {
 		String v = "";
 		List<BaseField> fields = table.getKeyFields();
 		for(int i=0; i<fields.size(); i++) {
-			 v = v + ":" + columns.get(fields.get(i).fieldindex).getValue().toString();
+			 v = v + columns.get(fields.get(i).fieldindex).getValue().toString();
 		}
 		return table.SlaveKey + v;
 	}
@@ -109,13 +109,13 @@ public class RedisSchnauzer {
 			}
 		}
 		
-		if (StrHelp.TEqual(vlfield.masterfield, field.masterfield)) 
+		if (vlfield != null && StrHelp.TEqual(vlfield.masterfield, field.masterfield)) 
 			vlfield.fieldindex = index;
 		
-		if (StrHelp.TEqual(memfield.masterfield, field.masterfield)) 
+		if (memfield != null && StrHelp.TEqual(memfield.masterfield, field.masterfield)) 
 			memfield.fieldindex = index;
 		
-		if (StrHelp.TEqual(scorefield.masterfield, field.masterfield)) 
+		if (scorefield != null && StrHelp.TEqual(scorefield.masterfield, field.masterfield)) 
 			scorefield.fieldindex = index;
 	}
 	

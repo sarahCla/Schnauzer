@@ -6,97 +6,77 @@
 	<Mail>yifei.wang@163.com</Mail>
 </WarmingSendMailList>
 <RedisRepTableList>
-	<Table MasterTable="dlya" SlaveKey="A:P:ID&#61;" KeyField="profileid" DataType="Set" 
-		SQL="select profileid, period, count&#40;*&#41; 
-		     from dlya 
-		     where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; 
-				 group by profileid, period ">
+	<!--SQL artribute in the Table tag is used for get the initial statistics data of redis -->
+	<!--So, when you run the redis schnaruzer with parameter ReloadData, schnauzer will initate the redis data automatically -->
+	<Table MasterTable="dlyndx" SlaveKey="BillCount" KeyField="" DataType="Set" SQL="select profileid, count&#40;*&#41; from dlyndx group by profileid">
+		<ValueField MasterField="profileid"/>
+	</Table>
+	<Table MasterTable="dlya" SlaveKey="A:P:ID&#61;" KeyField="profileid" DataType="Set" SQL="select profileid, period, count&#40;*&#41; from dlya where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; group by profileid, period ">
 		<CheckField MasterField="vchtype" Value="11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143"/>
 		<ValueField MasterField="period"/>
 	</Table>
-	<Table MasterTable="dlya" SlaveKey="A:P:P:ID&#61;" KeyField="profileid" DataType="SortedSet"
-		SQL="select profileid, period as member, sum&#40;total&#41; 
-		     from dlya 
-				 where vchtype in &#40; 34, 6, 66, 73, 28,143 &#41; 
-				   and atypeid in &#40; 34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36 &#41; 
-				   and usedtype &#60; 10 
-				 group by profileid, period ">
+	<Table MasterTable="dlya" SlaveKey="A:P:P:ID&#61;" KeyField="profileid" DataType="SortedSet" SQL="select profileid, period as member, sum&#40;total&#41; from dlya where vchtype in &#40; 34, 6, 66, 73, 28,143 &#41; and atypeid in &#40; 34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36 &#41; and usedtype &#60; 10  group by profileid, period ">
 		<CheckField MasterField="vchtype" Value="34, 6, 66, 73, 28,143" Operator="in"/>
 		<CheckField MasterField="atypeid" Value="34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36" Operator="IN"/>
 		<CheckField MasterField="usedtype" Value="10" Operator="LessThan"/>
 		<MemberField MasterField="period"/>
 		<ScoreField MasterField="total"/>
 	</Table>
-	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"
-		SQL="select profileid, period, sum&#40;CostTotal&#41; 
-		     from dlysale 
-				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
-				 group by profileid, period ">
+	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"	SQL="select profileid, period, sum&#40;CostTotal&#41;  from dlysale where vchtype in &#40; 11, 45, 89, 26,142 &#41; group by profileid, period ">
 		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
 		<MemberField MasterField="period"/>
 		<ScoreField MasterField="costTotal"/>
 	</Table>
-	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"
-		SQL="select profileid, period, -1*sum&#40;tpTotal&#41; 
-		     from dlysale 
-				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
-				 group by profileid, period ">
+	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"	SQL="select profileid, period, -1*sum&#40;tpTotal&#41; from dlysale where vchtype in &#40; 11, 45, 89, 26,142 &#41; group by profileid, period ">
 		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
 		<MemberField MasterField="period"/>
 		<ScoreField MasterField="tpTotal" Multiplier="-1"/>
 	</Table>
 </RedisRepTableList>
-<!--RedisRepTableList>
-	<Table MasterTable="dlya" SlaveKey="凭证明细表:按期间分组:profiledid" KeyField="profileid" DataType="Set" 
-		SQL="select profileid, period, count&#40;*&#41; 
-		     from dlya 
-		     where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; 
-				 group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143"/>
-		<ValueField MasterField="period"/>
-	</Table>
-	<Table MasterTable="dlya" SlaveKey="凭证明细表:按期间分组:付款总额:profiledid" KeyField="profileid" DataType="SortedSet"
-		SQL="select profileid, period as member, sum&#40;total&#41; 
-		     from dlya 
-				 where vchtype in &#40; 34, 6, 66, 73, 28,143 &#41; 
-				   and atypeid in &#40; 34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36 &#41; 
-				   and usedtype &#60; 10 
-				 group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="34, 6, 66, 73, 28,143" Operator="in"/>
-		<CheckField MasterField="atypeid" Value="34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36" Operator="IN"/>
-		<CheckField MasterField="usedtype" Value="10" Operator="LessThan"/>
-		<MemberField MasterField="period"/>
-		<ScoreField MasterField="total"/>
-	</Table>
-	<Table MasterTable="dlysale" SlaveKey="销售明细表:按期间分组:销售总额:profiledid" KeyField="profileid" DataType="SortedSet"
-		SQL="select profileid, period, sum&#40;CostTotal&#41; 
-		     from dlysale 
-				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
-				 group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
-		<MemberField MasterField="period"/>
-		<ScoreField MasterField="costTotal"/>
-	</Table>
-	<Table MasterTable="dlysale" SlaveKey="销售明细表:按期间分组:销售总额:profiledid" KeyField="profileid" DataType="SortedSet"
-		SQL="select profileid, period, -1*sum&#40;tpTotal&#41; 
-		     from dlysale 
-				 where vchtype in &#40; 11, 45, 89, 26,142 &#41; 
-				 group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
-		<MemberField MasterField="period"/>
-		<ScoreField MasterField="tpTotal" Multiplier="-1"/>
-	</Table>
-</RedisRepTableList-->
 </Schnauzer>
-<!--?xml version="1.0" encoding="utf-8"?>
+<!-- ========================Demo of an MySql Slave=====================================
+<?xml version="1.0" encoding="utf-8"?>
 <Schnauzer>
-<MasterDBInfo Host="127.0.0.1" port="3306" user="root" pwd="xxxx" dbname="test" serverid="1"/>
-<SlaveDBInfo Host="127.0.0.1"  port="3306" user="root" pwd="xxxx" dbname="test3" type="mysql" SerailNo="75EA" MasterID="3"/>
-<HeartBeat Host="192.168.12.162" port="60002" Interval="600000" />
+<MasterDBInfo Host="192.168.12.162" port="3306" user="root" pwd="XXXX" dbname="roshall" serverid="1" />
+<SlaveDBInfo Host="192.168.12.162" port="3306" user="root" pwd="XXXX" dbname="roshallslave" type="mysql"/>
 <WarmingSendMailList>
-        <Mail>yifei.wang@163.com</Mail> 
+	<Mail>yifei.wang@163.com</Mail>
+	<Mail>RepRobot@163.com</Mail>	
 </WarmingSendMailList>
-<RepTableList> 
-	<Table MasterTable="TT2" SlaveTable="TT2" KeyField="id"  heterogeneous="false" mergedTable="true"/>
+<RepTableList>
+	<Table MasterTable="ptype" SlaveTable="ptype" KeyField="id" CheckField="barcode" NeedRepValue="NeedReplicateTo   A"  heterogeneous="false"/>
+	<Table MasterTable="HTestTable" SlaveTable="HTestTableSlave" KeyField="id" CheckField="fax" NeedRepValue="A"  heterogeneous="true">
+		<Field MasterField="id" SlaveField="id" DefaultValue=""/>
+		<Field MasterField="fullname" SlaveField="name" DefaultValue=""/>
+		<Field MasterField="" SlaveField="comment" DefaultValue="Copy From"/>
+	</Table>	
 </RepTableList>
-</Schnauzer-->
+</Schnauzer>
+-->
+<!-- ============================Demo of an Sqlserver Slave=================================
+<?xml version="1.0" encoding="utf-8"?>
+<Schnauzer>
+<HeartBeat Host="192.168.12.162" port="60002" Interval="20000" />
+<MasterDBInfo Host="192.168.12.162" port="3306" user="root" pwd="XXXX" dbname="roshall" serverid="21" />
+<SlaveDBInfo Host="192.168.12.162" port="1432" user="sa" pwd="XXXX" dbname="test2" type="sqlserver" SerailNo="0AEe"/>
+<WarmingSendMailList>
+	<Mail>yifei.wang@163.com</Mail>
+</WarmingSendMailList>
+<RepTableList>  
+  <Table MasterTable="m3" SlaveTable="m22" KeyField="id,id2" heterogeneous="true"  mergedTable="true"> 
+    	<Field  MasterField="id" SlaveField="id" /> 
+    	<Field  MasterField="id2" SlaveField="id2" /> 
+      <Field  MasterField="name" SlaveField="name" /> 
+      <Field  MasterField="" SlaveField="pwd"  DefaultValue="''" /> 
+      <Field  MasterField="" SlaveField="uid"  DefaultType="cuid" /> 
+   </Table>
+    <Table  MasterTable="m4" SlaveTable="m22" KeyField="id,id2" heterogeneous="true"  mergedTable="true">
+      <Field  MasterField="id" SlaveField="id" /> 
+      <Field  MasterField="id2" SlaveField="id2" /> 
+      <Field  MasterField="pwd" SlaveField="pwd" /> 
+      <Field  MasterField="" SlaveField="name"  DefaultValue="''" /> 
+      <Field  MasterField="" SlaveField="uid"  DefaultType="cuid" /> 
+    </Table> 
+</RepTableList>
+</Schnauzer>
+-->
