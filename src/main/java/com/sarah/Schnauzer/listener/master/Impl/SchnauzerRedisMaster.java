@@ -78,7 +78,7 @@ public class SchnauzerRedisMaster  implements IMaster {
 		dbhelper.noLog = true;
 		registgerTableReplicator(master);
 		//needInitData = (args.length>0) && (args[0].equalsIgnoreCase("ReloadData"));
-		needInitData = true;
+		needInitData = false;
 		if (needInitData) 
 		{
 			doInitiate();

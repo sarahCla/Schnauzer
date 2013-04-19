@@ -18,6 +18,7 @@
 package com.sarah;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 
 import java.io.InputStreamReader;
 import java.sql.ResultSet;
@@ -29,7 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.code.or.OpenReplicator;
+import com.google.code.or.listener.SocketGuard;
 import com.google.code.or.logging.Log4jInitializer;
+import com.google.code.or.net.impl.TransportImpl;
 import com.sarah.tools.localinfo.*;
 import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
@@ -51,6 +54,7 @@ public class SchnauzerRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SchnauzerRunner.class);
 	
 
+	
 	private static boolean iniRepStatus(DBConnectorConfig masterConfig, DBConnectorConfig slaveConfig) throws Exception {
 		SlaveStatus rsSlave = (new SlaveHelperFactory(slaveConfig)).getSlaveStatus();
 		if (rsSlave==null)	throw new Exception(Infos.ConSlave + Infos.Failed);
@@ -89,7 +93,8 @@ public class SchnauzerRunner {
 			if (!conf.getDBConfig(masterConfig, Tags.MasterDB)) System.exit(-1);
 			if (!conf.getDBConfig(slaveConfig, Tags.SlaveDB))  System.exit(-1);
 
-			ResultSet rsMaster = (new SlaveHelperFactory(masterConfig)).getRS("select 1");
+			SlaveHelperFactory mHelper = new SlaveHelperFactory(masterConfig);
+			ResultSet rsMaster = mHelper.getRS("select 1");
 			if (rsMaster==null)	throw new Exception(Infos.ConMaster + Infos.Failed);
 			
 			iniRepStatus(masterConfig, slaveConfig);
@@ -99,6 +104,10 @@ public class SchnauzerRunner {
 			or.setMasterAndSlave(masterConfig, slaveConfig);
 			ClientTableListener listener = new ClientTableListener(masterConfig, slaveConfig, args);
 			or.setBinlogEventListener(listener);
+
+			SocketGuard guard = new SocketGuard(or, mHelper.getMySQLHelper());
+			guard.start();
+			
 			or.start();
 			
 			final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

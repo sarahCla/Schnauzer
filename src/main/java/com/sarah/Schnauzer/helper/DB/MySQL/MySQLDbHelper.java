@@ -17,6 +17,14 @@ public class MySQLDbHelper extends AbstractDbHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDbHelper.class);
 	
 
+	public Boolean isClosed() throws SQLException {
+		return conn.isClosed() || (!conn.isValid(1000));
+	}
+	
+	public void reOpen() throws SQLException {
+		conn.close();
+		doOpen();
+	}
 	
 	public MySQLDbHelper(DBConnectorConfig dbConfig) {
 		super(dbConfig);

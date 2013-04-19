@@ -16,6 +16,7 @@
  */
 package com.google.code.or.binlog.impl;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,6 +28,7 @@ import com.google.code.or.binlog.BinlogEventParser;
 import com.google.code.or.binlog.impl.event.BinlogEventV4HeaderImpl;
 import com.google.code.or.io.XInputStream;
 import com.google.code.or.net.Transport;
+import com.google.code.or.net.impl.TransportImpl;
 import com.google.code.or.net.impl.packet.EOFPacket;
 import com.google.code.or.net.impl.packet.ErrorPacket;
 import com.google.code.or.net.impl.packet.OKPacket;
@@ -40,10 +42,11 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationBasedBinlogParser.class);
 	
 	//
-	protected Transport transport;
+	public Transport transport;
 	protected String binlogFileName;
 	
-
+	public Boolean sockStarted = false;
+	
 	/**
 	 * 
 	 */
@@ -93,6 +96,8 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 				final int packetSequence = is.readInt(1);
 				is.setReadLimit(packetLength); // Ensure the packet boundary
 				
+				sockStarted = true;
+			
 				//
 				final int packetMarker = is.readInt(1);
 				if(packetMarker != OKPacket.PACKET_MARKER) { // 0x00
@@ -137,7 +142,7 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 					throw new NestableRuntimeException("assertion failed, available: " + is.available() + ", event type: " + header.getEventType());
 				}
 			} catch (Exception e) {
-				LOGGER.info(e.toString());
+				LOGGER.error(e.toString());
 				break;
 			} finally {
 				is.setReadLimit(0);

@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Schnauzer>
 <MasterDBInfo Host="192.168.12.247" port="3306" user="root" pwd="247" dbname="test" serverid="1" />
+<SlaveDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="test" type="mysql"/>
+<WarmingSendMailList>
+	<Mail>yifei.wang@163.com</Mail>
+</WarmingSendMailList>
+<RepTableList>
+	<Table MasterTable="t" SlaveTable="t" KeyField="id"/>
+</RepTableList>
+</Schnauzer>
+
+<!--?xml version="1.0" encoding="utf-8"?>
+<Schnauzer>
+<MasterDBInfo Host="192.168.12.247" port="3306" user="root" pwd="247" dbname="test" serverid="1" />
 <SlaveDBInfo Host="192.168.10.50" port="6379" type="redis"/>
 <WarmingSendMailList>
 	<Mail>yifei.wang@163.com</Mail>
 </WarmingSendMailList>
-<RedisRepTableList>
+<RedisRepTableList-->
 	<!--SQL artribute in the Table tag is used for get the initial statistics data of redis -->
 	<!--So, when you run the redis schnaruzer with parameter ReloadData, schnauzer will initate the redis data automatically -->
-	<Table MasterTable="dlyndx" SlaveKey="BillCount" KeyField="" DataType="Set" SQL="select profileid, count&#40;*&#41; from dlyndx group by profileid">
+	<!--Table MasterTable="dlyndx" SlaveKey="BillCount" KeyField="" DataType="Set" SQL="select profileid, count&#40;*&#41; from dlyndx group by profileid">
 		<ValueField MasterField="profileid"/>
 	</Table>
 	<Table MasterTable="dlya" SlaveKey="A:P:ID&#61;" KeyField="profileid" DataType="Set" SQL="select profileid, period, count&#40;*&#41; from dlya where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; group by profileid, period ">
@@ -32,8 +44,12 @@
 		<MemberField MasterField="period"/>
 		<ScoreField MasterField="tpTotal" Multiplier="-1"/>
 	</Table>
+	<Table MasterTable="dlysale" SlaveKey="Top10Sale:ID&#61;" KeyField="profileid" DataType="SortedSet"	SQL="select profileid, ptypeid, -sum&#40;qty&#41;  from dlysale group by profileid, ptypeid ">
+		<MemberField MasterField="ptypeid"/>
+		<ScoreField MasterField="qty"  Multiplier="-1"/>
+	</Table>
 </RedisRepTableList>
-</Schnauzer>
+</Schnauzer-->
 <!-- ========================Demo of an MySql Slave=====================================
 <?xml version="1.0" encoding="utf-8"?>
 <Schnauzer>

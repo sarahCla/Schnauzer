@@ -76,4 +76,5 @@ public interface Infos {
 	String RecordNotFound = "下面的语句没有找到对应记录";
 	String SQLNotFound = "找不到对应的SQL语句：";	
 	String NoMasterRecord = "masterID={}对应的记录在{}表中不存在";
+	String StartReg = "开始注册master数据库[{}][{}]";
 }

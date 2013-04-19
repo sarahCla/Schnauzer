@@ -54,6 +54,7 @@ import com.google.code.or.net.impl.TransportImpl;
 import com.google.code.or.net.impl.packet.ErrorPacket;
 import com.google.code.or.net.impl.packet.command.ComBinlogDumpPacket;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Infos;
 
 /**
  * 
@@ -71,7 +72,7 @@ public class OpenReplicator {
 	protected int socketReceiveBufferSize = 512 * 1024;
 	
 	//
-	protected Transport transport;
+	public Transport transport;
 	protected BinlogParser binlogParser;
 	protected BinlogEventListener binlogEventListener;
 	protected final AtomicBoolean running = new AtomicBoolean(false);
@@ -98,7 +99,7 @@ public class OpenReplicator {
 				return;
 			}
 
-			LOGGER.info("开始注册master数据库[" + this.slave.binlog + "][" + this.slave.pos + "]");
+			LOGGER.info(String.format(Infos.StartReg, this.slave.binlog ,this.slave.pos));
 			
 			if(this.transport == null) this.transport = getDefaultTransport();
 			this.transport.connect(this.master.host, this.master.port);

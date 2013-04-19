@@ -19,6 +19,7 @@ package com.sarah.Schnauzer.helper.DB;
 import java.sql.*;
 
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.DB.MySQL.MySQLDbHelper;
 import com.sarah.Schnauzer.helper.DB.MySQL.MySQLSlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.Redis.RedisSlaveDBHelper;
 import com.sarah.Schnauzer.helper.DB.SqlServer.SqlServerSlaveDbHelper;
@@ -31,6 +32,13 @@ import com.sarah.Schnauzer.helper.DB.SqlServer.SqlServerSlaveDbHelper;
 public class SlaveHelperFactory implements ISlaveDbHelper {
 	private DBConnectorConfig dbconfig;
 	private ISlaveDbHelper helper = null;
+	
+	public MySQLDbHelper getMySQLHelper() {
+		if (dbconfig.isMySQL())
+			return (MySQLSlaveDbHelper)this.helper;
+		else
+			return null;
+	}
 	
 	public SlaveHelperFactory(DBConnectorConfig dbconfig) {
 		this.dbconfig = dbconfig;

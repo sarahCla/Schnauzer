@@ -39,13 +39,15 @@ import com.google.code.or.net.impl.packet.GreetingPacket;
 public class TransportImpl extends AbstractTransport {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TransportImpl.class);
 	
-	protected Socket socket;
+	public Socket socket;
 	protected TransportInputStream is;
 	protected TransportOutputStream os;
 	protected SocketFactory socketFactory;
 	protected int level1BufferSize = 1024 * 1024;
 	protected int level2BufferSize = 8 * 1024 * 1024;
 	protected final AtomicBoolean connected = new AtomicBoolean(false);
+	
+	public Boolean socketStarted = false;
 
 	/**
 	 * 
@@ -98,6 +100,8 @@ public class TransportImpl extends AbstractTransport {
 		
 		//
 		this.authenticator.login(this);
+		
+		socketStarted = true;
 	}
 
 	public void disconnect() throws Exception {
