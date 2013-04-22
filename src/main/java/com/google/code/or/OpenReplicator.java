@@ -77,6 +77,8 @@ public class OpenReplicator {
 	protected BinlogEventListener binlogEventListener;
 	protected final AtomicBoolean running = new AtomicBoolean(false);
 	
+	private Boolean needStop = false;
+	
 	
 	public void setMasterAndSlave(DBConnectorConfig master,  DBConnectorConfig slave) 
 	{
@@ -128,9 +130,13 @@ public class OpenReplicator {
 			*/
 
 			ReplicationBasedBinlogParser p = (ReplicationBasedBinlogParser)this.binlogParser;
-			while (p.running2.get()==true) { Thread.sleep(1000); }
-			while (p.isRunning()) { Thread.sleep(1000); }
-		}
+			while (!needStop && p.running2.get()==true) { 
+				Thread.sleep(1000);
+			}
+			while (!needStop && p.isRunning()) { 
+				Thread.sleep(1000);
+			}
+		}		
 	}
 
 	public void stop(long timeout, TimeUnit unit) throws Exception {
@@ -142,7 +148,6 @@ public class OpenReplicator {
 		//
 		this.transport.disconnect();
 		this.binlogParser.stop(timeout, unit);
-		
 	}
 	
 	public void stopQuietly(long timeout, TimeUnit unit) {
@@ -151,6 +156,17 @@ public class OpenReplicator {
 		} catch(Exception e) {
 			// NOP
 		}
+	}
+	
+
+	public void stop4Redo(long timeout, TimeUnit unit) {
+		try {
+			needStop = true;
+			stop(timeout, unit);
+		} catch(Exception e) {
+			// NOP
+		}
+		LOGGER.info("OpenReplicator will be stopped 4 redo");
 	}
 	
 

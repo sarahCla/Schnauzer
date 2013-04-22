@@ -16,25 +16,10 @@
  */
 package com.google.code.or.listener.slave;
 
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.code.or.binlog.BinlogEventParser;
-import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.binlog.BinlogEventListener;
-import com.google.code.or.common.glossary.Column;
-import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.glossary.column.Int24Column;
-import com.google.code.or.common.glossary.column.LongColumn;
-import com.google.code.or.common.glossary.column.StringColumn;
-import com.google.code.or.common.util.MySQLConstants;
-import com.google.code.or.listener.ColumnTypeHelper;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
-import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
+import com.sarah.Schnauzer.listener.ColumnTypeHelper;
 
 /**
  * 

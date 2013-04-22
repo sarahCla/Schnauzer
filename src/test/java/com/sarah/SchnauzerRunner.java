@@ -18,21 +18,16 @@
 package com.sarah;
 
 import java.io.BufferedReader;
-import java.io.IOException;
-
 import java.io.InputStreamReader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.lang.exception.NestableRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.listener.SocketGuard;
 import com.google.code.or.logging.Log4jInitializer;
-import com.google.code.or.net.impl.TransportImpl;
 import com.sarah.tools.localinfo.*;
 import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
@@ -107,9 +102,8 @@ public class SchnauzerRunner {
 
 			SocketGuard guard = new SocketGuard(or, mHelper.getMySQLHelper());
 			guard.start();
-			
 			or.start();
-			
+
 			final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 			for(String line = br.readLine(); line != null; line = br.readLine()) {
 			    if(line.equals("q")) {

@@ -16,8 +16,6 @@
  */
 package com.sarah.Schnauzer.listener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.BinlogEventListener;
 import com.google.code.or.common.util.MySQLConstants;
@@ -37,7 +35,7 @@ import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRedisMaster;
  */
 public class ClientTableListener implements BinlogEventListener {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClientTableListener.class);
+	//private static final Logger LOGGER = LoggerFactory.getLogger(ClientTableListener.class);
 	private ColumnTypeHelper helper = new ColumnTypeHelper();
 	private IMaster slave;
 	

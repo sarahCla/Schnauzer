@@ -1,13 +1,11 @@
 package com.google.code.or.listener;
 
-import java.sql.ResultSet;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.code.or.OpenReplicator;
-import com.google.code.or.net.impl.TransportImpl;
-import com.sarah.Schnauzer.helper.ErrorHelper;
 import com.sarah.Schnauzer.helper.Infos;
-import com.sarah.Schnauzer.helper.DB.SlaveHelperFactory;
 import com.sarah.Schnauzer.helper.DB.MySQL.MySQLDbHelper;
 
 /**
@@ -19,7 +17,6 @@ public class SocketGuard extends Thread {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SocketGuard.class);
 	
 	private OpenReplicator or;
-	private TransportImpl trans; 
 	Boolean isOK = true;
 	private MySQLDbHelper mHelper;
 	
@@ -31,24 +28,26 @@ public class SocketGuard extends Thread {
 
 	public void run() 
 	{
-		
+		Long timespan = 60000L;
 		while(isOK) {
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(timespan);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			try {
-				LOGGER.info("check the connection ...");
-				//ResultSet rsMaster = mHelper.getRS("select 1");
-				//if (rsMaster==null)
 				if (mHelper.isClosed())
 					throw new RuntimeException(Infos.ConMaster + Infos.Failed);
 			} catch (Exception e) {
 				isOK = false;
-				LOGGER.error("socket been stoped" + e.getMessage());
-				throw new RuntimeException("socket been stoped" + e.getMessage());
+				try {
+					this.or.stop4Redo(1, TimeUnit.SECONDS);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				LOGGER.error("socket is stopping: " + e.getMessage());
 			}
 		}
+		LOGGER.error("SocketGuard stopped");
 	}
 }

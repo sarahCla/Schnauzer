@@ -45,6 +45,6 @@ public interface Tags {
 	String pos = "pos";
 	String softname = "Schnauzer";
 	String repTable = "RepStatus";
-	String version = "2.0.0.1";
+	String version = "2.1.0.1";
 	
 }

@@ -104,6 +104,19 @@ public class TransportImpl extends AbstractTransport {
 		socketStarted = true;
 	}
 
+
+	public void doClose() throws Exception {
+		//
+		IOUtils.closeQuietly(this.is);
+		IOUtils.closeQuietly(this.os);
+		IOUtils.closeQuietly(this.socket);
+		
+		//
+		if(isVerbose() && LOGGER.isInfoEnabled()) {
+			LOGGER.info("doClose from {}:{}", this.context.getServerHost(), this.context.getServerPort());
+		}
+	}
+	
 	public void disconnect() throws Exception {
 		//
 		if(!this.connected.compareAndSet(true, false)) {
