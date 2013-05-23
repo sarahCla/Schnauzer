@@ -415,6 +415,12 @@ public abstract class AbstractRDBMaster implements IMaster {
 		}
 		
 
+		//TTT
+		dbhelper.excuteSqlByTransaction(sqls, errInfo);
+		return true;
+		
+		/*
+
 		if (dbhelper.excuteSqlByTransaction(sqls, errInfo))
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
@@ -422,7 +428,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 			LOGGER.info(Infos.DoUpdate + Infos.OK);
 			return true;
 		}
-
+		
 		String sInfo = getWarning(sqls, errInfo);
 		mailAndLog(Infos.DoUpdate + Infos.Failed, sInfo);
 		this.slaveDb.errorMsg = "Update command faild";
@@ -438,6 +444,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		}
 		rollBackToTableEvent(helper);
 		return false;
+		*/
 	}
 
 	@Override

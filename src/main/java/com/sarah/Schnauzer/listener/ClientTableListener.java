@@ -76,13 +76,14 @@ public class ClientTableListener implements BinlogEventListener {
 			setHelper(helper, (TableMapEvent)event);
 			break;
 		case MySQLConstants.WRITE_ROWS_EVENT:
-    		if (!slave.doWrite(helper, (WriteRowsEvent)event))	System.exit(-1);
+			if (!slave.doWrite(helper, (WriteRowsEvent)event))	System.exit(-1);
 			break;
-		case MySQLConstants.DELETE_ROWS_EVENT:
-    		if (!slave.doDelete(helper, (DeleteRowsEvent)event)) System.exit(-1);
-			break;
+		//case MySQLConstants.DELETE_ROWS_EVENT:
+    	//	if (!slave.doDelete(helper, (DeleteRowsEvent)event)) System.exit(-1);
+		//	break;
 		case MySQLConstants.UPDATE_ROWS_EVENT:
-    		if (!slave.doUpdate(helper,  (UpdateRowsEvent)event)) System.exit(-1);
+    		//if (!slave.doUpdate(helper,  (UpdateRowsEvent)event)) System.exit(-1);
+			slave.doUpdate(helper,  (UpdateRowsEvent)event);
 			break;
 		case MySQLConstants.ROTATE_EVENT:
 			setHelper(helper, (RotateEvent)event);

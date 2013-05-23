@@ -87,7 +87,6 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 	 */
 	@Override
 	protected void doParse() throws Exception {
-		//LOGGER.info("Call doParse()");
 		final XInputStream is = this.transport.getInputStream();
 		final Context context = new Context(this.binlogFileName);
 		while(isRunning()) {

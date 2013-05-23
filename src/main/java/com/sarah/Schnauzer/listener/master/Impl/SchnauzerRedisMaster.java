@@ -30,28 +30,18 @@ import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.glossary.column.BitColumn;
-import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
-import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.helper.ErrorHelper;
 import com.sarah.Schnauzer.helper.Infos;
-import com.sarah.Schnauzer.helper.WarmingMailHelper;
-import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.MasterDBHelper;
 import com.sarah.Schnauzer.helper.DB.MySQL.MySQLDbHelper;
 import com.sarah.Schnauzer.helper.DB.Redis.RedisSlaveDBHelper;
 import com.sarah.Schnauzer.listener.ColumnTypeHelper;
-import com.sarah.Schnauzer.listener.TableReplicator.RDB.ITableReplicator;
-import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RDBSchnauzer;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
-import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.BaseField;
+import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.RedisStructure;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Impl.RedisSchnauzer;
 import com.sarah.Schnauzer.listener.master.IMaster;
-import com.sarah.tools.cuid.CUID;
-import com.sarah.tools.localinfo.LocalInfo;
-import com.sarah.tools.localinfo.LocalInfoGetter;
 import com.sarah.tools.type.StrHelp;
 
 /**
@@ -78,7 +68,7 @@ public class SchnauzerRedisMaster  implements IMaster {
 		dbhelper.noLog = true;
 		registgerTableReplicator(master);
 		//needInitData = (args.length>0) && (args[0].equalsIgnoreCase("ReloadData"));
-		needInitData = false;
+		needInitData = true;
 		if (needInitData) 
 		{
 			doInitiate();
@@ -125,19 +115,34 @@ public class SchnauzerRedisMaster  implements IMaster {
 			String key = "";
 			String member = "";
 			Double score = 0.0;
+			String value = "";
 			int rowCount = 0;
 			Boolean haveKey = table.table.haveKeyFields();
+			rs.beforeFirst();
+			RedisStructure type = table.getType();
 			while(rs.next()) {
-				if (haveKey) {
+				switch(type) {
+				case Set:
+				case SortedSet:
+					if (haveKey) {
+						key = rs.getString(1);
+						member = rs.getString(2);
+						score = rs.getDouble(3);
+					} else {
+						key = "";
+						member = rs.getString(1);
+						score = rs.getDouble(2);
+					}
+					dbhelper.zincrby(preKey + key, score, member);
+					break;
+				case String:
 					key = rs.getString(1);
-					member = rs.getString(2);
-					score = rs.getDouble(3);
-				} else {
-					key = "";
-					member = rs.getString(1);
-					score = rs.getDouble(2);
+					value = rs.getString(2);
+					dbhelper.set(preKey + key, value);
+					break;
+				default:
+					ErrorHelper.errExit(LOGGER.getName() + " '" + table.getType() + "' Not Impliment....");
 				}
-				dbhelper.zincrby(preKey+key, score, member);
 				rowCount = rowCount+1;
 			}
 			LOGGER.info("load " + preKey + " OK. rowcount=" + rowCount);
@@ -164,10 +169,11 @@ public class SchnauzerRedisMaster  implements IMaster {
 				{
 				case Set:
 				case SortedSet:
+				case String:
 					initSet(table, rs);
 					break;
 				default:
-					ErrorHelper.errExit("Not Impliment....");
+					ErrorHelper.errExit(LOGGER.getName() + " '" + table.getType() + "' Not Impliment....");
 				}
 				
 			}
@@ -236,6 +242,12 @@ public class SchnauzerRedisMaster  implements IMaster {
 			List<Column> columns = row.getColumns();
 			if (!table.needReplicate(columns, helper)) continue;
 			switch(table.getType()) {
+			case String:
+				value = helper.getColStr(valueIndex, columns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
+				dbhelper.set(table.getKey(columns), value);
+				dbhelper.setBinlogKey(getBinLogName(helper), Long.toString(helper.position), helper.tableName);
+				break;
+				
 			case Set :
 				score = 1.0;
 				value = helper.getColStr(valueIndex, columns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
@@ -294,6 +306,7 @@ public class SchnauzerRedisMaster  implements IMaster {
 		Double preScore = 0.0;
 		String member = "";
 		String value = "";
+		String preValue = "";
 		for (int j=0; j<rows.size(); j++)
 		{
             Pair<Row> pRow = rows.get(j);  
@@ -306,11 +319,24 @@ public class SchnauzerRedisMaster  implements IMaster {
 			if (!table.needReplicate(columns, helper)) continue;
 			
 			switch(table.getType()) {
-			case Set :
+			case String:
 				value = helper.getColStr(valueIndex, columns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
-				dbhelper.sadd(table.getKey(columns), value);
+				dbhelper.set(table.getKey(columns), value);
 				dbhelper.setBinlogKey(getBinLogName(helper), Long.toString(helper.position), helper.tableName);
 				break;
+				
+			case Set :
+				score = 1.0;
+
+				preValue = helper.getColStr(valueIndex, pcolumns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
+				dbhelper.zincrby(table.getKey(columns), -1*score, preValue);
+				
+				value = helper.getColStr(valueIndex, columns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
+				dbhelper.zincrby(table.getKey(columns), score, value);
+
+				dbhelper.setBinlogKey(getBinLogName(helper), Long.toString(helper.position), helper.tableName);
+				break;
+				
 			case SortedSet:
 				score = Double.parseDouble(helper.getColStr(scoreIndex, columns.get(scoreIndex), (byte)1, table.masterfields.get(scoreIndex))) * table.scorefield.multiplier;
 				preScore = Double.parseDouble(helper.getColStr(scoreIndex, pcolumns.get(scoreIndex), (byte)1, table.masterfields.get(scoreIndex))) * table.scorefield.multiplier;
@@ -365,10 +391,16 @@ public class SchnauzerRedisMaster  implements IMaster {
 			List<Column> columns = row.getColumns();
 			if (!table.needReplicate(columns, helper)) continue;
 			switch(table.getType()) {
+			case String:
+				dbhelper.delete(table.getKey(columns));
+				dbhelper.setBinlogKey(getBinLogName(helper), Long.toString(helper.position), helper.tableName);
+				break;
+				
 			case Set :
+				score = -1.00;
 				value = helper.getColStr(valueIndex, columns.get(valueIndex), (byte)1, table.masterfields.get(valueIndex));
-				dbhelper.sadd(table.getKey(columns), value);
-				dbhelper.setBinlogKey(helper.binlogFileName.toString(), Long.toString(helper.position), helper.tableName);
+				dbhelper.zincrby(table.getKey(columns), score, value);
+				dbhelper.setBinlogKey(getBinLogName(helper), Long.toString(helper.position), helper.tableName);
 				break;
 			case SortedSet:
 				score = Double.parseDouble(helper.getColStr(scoreIndex, columns.get(scoreIndex), (byte)1, table.masterfields.get(scoreIndex))) * table.scorefield.multiplier;

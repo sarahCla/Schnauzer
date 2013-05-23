@@ -113,6 +113,30 @@ public class RedisSlaveDBHelper implements ISlaveDbHelper{
 			ErrorHelper.errExit("sadd(" + key + "," + value + ")" + Infos.Failed );
 		}
 	}
+
+	public void set(String key, String value) {
+		try
+		{
+			doOpen();
+			conn.select(datadb);
+			conn.set(key, value);
+			LOGGER.info("set " + key + " " + value);
+		} catch(Exception e) {
+			ErrorHelper.errExit("set(" + key + "," + value + ")" + Infos.Failed );
+		}
+	}
+
+	public void delete(String key) {
+		try
+		{
+			doOpen();
+			conn.select(datadb);
+			conn.del(key);
+			LOGGER.info("delete " + key);
+		} catch(Exception e) {
+			ErrorHelper.errExit("delete(" + key + ")" + Infos.Failed );
+		}
+	}
 	
 
 	@Override
