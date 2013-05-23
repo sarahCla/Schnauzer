@@ -97,8 +97,8 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 				
 				sockStarted = true;
 			
-				//
 				final int packetMarker = is.readInt(1);
+				
 				if(packetMarker != OKPacket.PACKET_MARKER) { // 0x00
 					if((byte)packetMarker == ErrorPacket.PACKET_MARKER) {
 						final ErrorPacket packet = ErrorPacket.valueOf(packetLength, packetSequence, packetMarker, is);
@@ -106,7 +106,7 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 					} else if((byte)packetMarker == EOFPacket.PACKET_MARKER) {
 						//final EOFPacket packet = EOFPacket.valueOf(packetLength, packetSequence, packetMarker, is);
 						running2.set(false);
-						LOGGER.info("=====should retry==========");						
+						LOGGER.info("========Get EOFPacket should retry==========");						
 						//continue;
 						//throw new NestableRuntimeException(packet.toString());
 					} else {
@@ -142,6 +142,7 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 				}
 			} catch (Exception e) {
 				LOGGER.error(e.toString());
+				running2.set(false);
 				break;
 			} finally {
 				is.setReadLimit(0);

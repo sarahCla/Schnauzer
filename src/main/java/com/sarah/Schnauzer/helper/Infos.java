@@ -77,4 +77,7 @@ public interface Infos {
 	String SQLNotFound = "找不到对应的SQL语句：";	
 	String NoMasterRecord = "masterID={}对应的记录在{}表中不存在";
 	String StartReg = "开始注册master数据库[{}][{}]";
+	String Stopped = "======================....SCHNAUZER STOPPED==========================";
+	String Started = "=====================SCHNAUZER START TO RUN.......===================";
+	
 }

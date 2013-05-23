@@ -46,5 +46,6 @@ public interface Tags {
 	String softname = "Schnauzer";
 	String repTable = "RepStatus";
 	String version = "2.1.0.1";
+	String PublishDate = "2013-05-23-1";
 	
 }

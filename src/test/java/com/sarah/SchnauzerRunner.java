@@ -131,6 +131,8 @@ public class SchnauzerRunner {
 	 */
 	public static void main(String args[]) throws Exception {
 		Log4jInitializer.initialize("log4j.xml");		
+		LOGGER.info(Infos.Started);
+		LOGGER.info("[PublishedDate] " + Tags.PublishDate);
 		while (true) 
 		{
 			try

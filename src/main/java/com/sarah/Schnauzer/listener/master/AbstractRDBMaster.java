@@ -414,13 +414,6 @@ public abstract class AbstractRDBMaster implements IMaster {
 			return true;
 		}
 		
-
-		//TTT
-		dbhelper.excuteSqlByTransaction(sqls, errInfo);
-		return true;
-		
-		/*
-
 		if (dbhelper.excuteSqlByTransaction(sqls, errInfo))
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
@@ -444,7 +437,6 @@ public abstract class AbstractRDBMaster implements IMaster {
 		}
 		rollBackToTableEvent(helper);
 		return false;
-		*/
 	}
 
 	@Override

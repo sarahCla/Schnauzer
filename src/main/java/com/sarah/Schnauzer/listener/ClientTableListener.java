@@ -16,6 +16,10 @@
  */
 package com.sarah.Schnauzer.listener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.BinlogEventListener;
 import com.google.code.or.common.util.MySQLConstants;
@@ -25,6 +29,7 @@ import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
+import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.listener.master.IMaster;
 import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRDBMaster;
 import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRedisMaster;
@@ -35,7 +40,7 @@ import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRedisMaster;
  */
 public class ClientTableListener implements BinlogEventListener {
 	
-	//private static final Logger LOGGER = LoggerFactory.getLogger(ClientTableListener.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ClientTableListener.class);
 	private ColumnTypeHelper helper = new ColumnTypeHelper();
 	private IMaster slave;
 	
@@ -76,14 +81,19 @@ public class ClientTableListener implements BinlogEventListener {
 			setHelper(helper, (TableMapEvent)event);
 			break;
 		case MySQLConstants.WRITE_ROWS_EVENT:
-			if (!slave.doWrite(helper, (WriteRowsEvent)event))	System.exit(-1);
+			if (!slave.doWrite(helper, (WriteRowsEvent)event)) {
+				LOGGER.info(Infos.Stopped);
+				System.exit(-1);
+			}
 			break;
-		//case MySQLConstants.DELETE_ROWS_EVENT:
-    	//	if (!slave.doDelete(helper, (DeleteRowsEvent)event)) System.exit(-1);
-		//	break;
+		case MySQLConstants.DELETE_ROWS_EVENT:
+    		slave.doDelete(helper, (DeleteRowsEvent)event);
+			break;
 		case MySQLConstants.UPDATE_ROWS_EVENT:
-    		//if (!slave.doUpdate(helper,  (UpdateRowsEvent)event)) System.exit(-1);
-			slave.doUpdate(helper,  (UpdateRowsEvent)event);
+    		if (!slave.doUpdate(helper,  (UpdateRowsEvent)event)) {
+    			LOGGER.info(Infos.Stopped);
+    			System.exit(-1);
+    		}
 			break;
 		case MySQLConstants.ROTATE_EVENT:
 			setHelper(helper, (RotateEvent)event);
