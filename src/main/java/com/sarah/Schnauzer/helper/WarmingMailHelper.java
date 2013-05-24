@@ -21,6 +21,8 @@ import com.sarah.tools.email.SimpleMailSender;
 public class WarmingMailHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WarmingMailHelper.class);
 	private List<String> recipients;
+	private List<String> sender;
+	private List<String> senderpwd;
 	private SimpleMailSender serviceSms;
 	private String filename;
 	
@@ -34,9 +36,11 @@ public class WarmingMailHelper {
 	}
 	
 	private void ini() {
-		serviceSms = new SimpleMailSender("RepRobot@163.com", "reprobot001");
 		recipients = new ArrayList<String>();
+		sender = new ArrayList<String>();
+		senderpwd = new ArrayList<String>();
 		loadRecipients();
+		serviceSms = new SimpleMailSender(sender.get(0), senderpwd.get(0));
 	}
 	
 	private void loadRecipients() {
@@ -47,7 +51,7 @@ public class WarmingMailHelper {
 		} else
 		{
 			ConfigGetHelper helper = new ConfigGetHelper();
-			helper.getMailList(recipients);
+			helper.getMailList(recipients, sender, senderpwd);
 		}
 	}
 	

@@ -69,15 +69,28 @@ public class ConfigGetHelper {
 		return (!att.getName().trim().equalsIgnoreCase(name));
 	}
 	
-	public boolean getMailList(List<String> recipients) {
+	public boolean getMailList(List<String> recipients, List<String> SendMail, List<String> Mailpwd) {
 		try {
 			Element root = getRootElem();
 			recipients.clear();			
+			String value = "";
 			for(@SuppressWarnings("unchecked")
 			Iterator<Element> i=root.elementIterator(); i.hasNext();)
 			{
 				Element head = (Element)i.next();
 				if (!head.getName().equalsIgnoreCase(Tags.MailLists)) continue;
+				List<Attribute> attrList = head.attributes();
+				for (int n=0; n<attrList.size(); n++) 
+				{
+				    Attribute att = (Attribute)attrList.get(n);
+				    value = att.getValue().trim();
+				    if (isEqual(att, "Send"))  	SendMail.add(value);
+				    else if (isEqual(att, "pwd"))  Mailpwd.add(value);
+				    else  {
+				    	LOGGER.error(Tags.MailLists + Infos.IllegalAttr  + att.getName());
+				    	System.exit(-1);
+				    }
+				}				
 				for(Iterator<Element> j = head.elementIterator();j.hasNext();)
 				{
 					Element elem = (Element) j.next();

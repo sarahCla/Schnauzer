@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author SarahCla
  */
-public class LocalInfoGetter {
+public class LocalInfoGetter{
 	
 	private static final Logger LOGGER = LoggerFactory.getLogger(LocalInfoGetter.class);
 	
@@ -140,4 +140,12 @@ public class LocalInfoGetter {
 		info.setSerialNo(HdSerial);
 		return true;		
 	}
+	
+	
+	public static long getPID() {
+	    String processName =
+	        java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
+	    return Long.parseLong(processName.split("@")[0]);
+
+	}	
 }

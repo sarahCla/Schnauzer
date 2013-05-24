@@ -1,98 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Schnauzer>
-<MasterDBInfo Host="192.168.12.247" port="3306" user="root" pwd="247" dbname="test" serverid="1" />
-<SlaveDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="test" type="mysql"/>
-<WarmingSendMailList>
-	<Mail>yifei.wang@163.com</Mail>
+<MasterDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="roshall" serverid="99" />
+<SlaveDBInfo Host="192.168.3.53"  port="3306" user="root" pwd="09230808" dbname="test" type="mysql" SerailNo="6621" masterID="99"/>
+<WarmingSendMailList Send="RepRobot@163.com" pwd="reprobot001">
+    <Mail>yifei.wang@163.com</Mail> 
 </WarmingSendMailList>
-<RepTableList>
-	<Table MasterTable="t" SlaveTable="t" KeyField="id"/>
+<RepTableList>  
+	<Table MasterTable="agent_bk" SlaveTable="agent_bk" KeyField="id">
+	</Table>
 </RepTableList>
 </Schnauzer>
 
+
 <!--?xml version="1.0" encoding="utf-8"?>
 <Schnauzer>
-<MasterDBInfo Host="192.168.12.247" port="3306" user="root" pwd="247" dbname="test" serverid="1" />
-<SlaveDBInfo Host="192.168.10.50" port="6379" type="redis"/>
-<WarmingSendMailList>
-	<Mail>yifei.wang@163.com</Mail>
-</WarmingSendMailList>
-<RedisRepTableList-->
-	<!--SQL artribute in the Table tag is used for get the initial statistics data of redis -->
-	<!--So, when you run the redis schnaruzer with parameter ReloadData, schnauzer will initate the redis data automatically -->
-	<!--Table MasterTable="dlyndx" SlaveKey="BillCount" KeyField="" DataType="Set" SQL="select profileid, count&#40;*&#41; from dlyndx group by profileid">
-		<ValueField MasterField="profileid"/>
-	</Table>
-	<Table MasterTable="dlya" SlaveKey="A:P:ID&#61;" KeyField="profileid" DataType="Set" SQL="select profileid, period, count&#40;*&#41; from dlya where vchtype in &#40;11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143&#41; group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="11, 45, 4, 89, 26, 34, 6, 66, 73, 28,35,36,142,143"/>
-		<ValueField MasterField="period"/>
-	</Table>
-	<Table MasterTable="dlya" SlaveKey="A:P:P:ID&#61;" KeyField="profileid" DataType="SortedSet" SQL="select profileid, period as member, sum&#40;total&#41; from dlya where vchtype in &#40; 34, 6, 66, 73, 28,143 &#41; and atypeid in &#40; 34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36 &#41; and usedtype &#60; 10  group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="34, 6, 66, 73, 28,143" Operator="in"/>
-		<CheckField MasterField="atypeid" Value="34, 6, 66, 73, 28,143,11, 45, 4, 89, 26,142,35,36" Operator="IN"/>
-		<CheckField MasterField="usedtype" Value="10" Operator="LessThan"/>
-		<MemberField MasterField="period"/>
-		<ScoreField MasterField="total"/>
-	</Table>
-	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"	SQL="select profileid, period, sum&#40;CostTotal&#41;  from dlysale where vchtype in &#40; 11, 45, 89, 26,142 &#41; group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
-		<MemberField MasterField="period"/>
-		<ScoreField MasterField="costTotal"/>
-	</Table>
-	<Table MasterTable="dlysale" SlaveKey="S:P:T:ID&#61;" KeyField="profileid" DataType="SortedSet"	SQL="select profileid, period, -1*sum&#40;tpTotal&#41; from dlysale where vchtype in &#40; 11, 45, 89, 26,142 &#41; group by profileid, period ">
-		<CheckField MasterField="vchtype" Value="11, 45, 89, 26,142" Operator="in"/>
-		<MemberField MasterField="period"/>
-		<ScoreField MasterField="tpTotal" Multiplier="-1"/>
-	</Table>
-	<Table MasterTable="dlysale" SlaveKey="Top10Sale:ID&#61;" KeyField="profileid" DataType="SortedSet"	SQL="select profileid, ptypeid, -sum&#40;qty&#41;  from dlysale group by profileid, ptypeid ">
-		<MemberField MasterField="ptypeid"/>
-		<ScoreField MasterField="qty"  Multiplier="-1"/>
-	</Table>
-</RedisRepTableList>
-</Schnauzer-->
-<!-- ========================Demo of an MySql Slave=====================================
-<?xml version="1.0" encoding="utf-8"?>
-<Schnauzer>
-<MasterDBInfo Host="192.168.12.162" port="3306" user="root" pwd="XXXX" dbname="roshall" serverid="1" />
-<SlaveDBInfo Host="192.168.12.162" port="3306" user="root" pwd="XXXX" dbname="roshallslave" type="mysql"/>
-<WarmingSendMailList>
-	<Mail>yifei.wang@163.com</Mail>
-	<Mail>RepRobot@163.com</Mail>	
-</WarmingSendMailList>
-<RepTableList>
-	<Table MasterTable="ptype" SlaveTable="ptype" KeyField="id" CheckField="barcode" NeedRepValue="NeedReplicateTo   A"  heterogeneous="false"/>
-	<Table MasterTable="HTestTable" SlaveTable="HTestTableSlave" KeyField="id" CheckField="fax" NeedRepValue="A"  heterogeneous="true">
-		<Field MasterField="id" SlaveField="id" DefaultValue=""/>
-		<Field MasterField="fullname" SlaveField="name" DefaultValue=""/>
-		<Field MasterField="" SlaveField="comment" DefaultValue="Copy From"/>
-	</Table>	
-</RepTableList>
-</Schnauzer>
--->
-<!-- ============================Demo of an Sqlserver Slave=================================
-<?xml version="1.0" encoding="utf-8"?>
-<Schnauzer>
 <HeartBeat Host="192.168.12.162" port="60002" Interval="20000" />
-<MasterDBInfo Host="192.168.12.162" port="3306" user="root" pwd="XXXX" dbname="roshall" serverid="21" />
-<SlaveDBInfo Host="192.168.12.162" port="1432" user="sa" pwd="XXXX" dbname="test2" type="sqlserver" SerailNo="0AEe"/>
-<WarmingSendMailList>
+<MasterDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="test" serverid="21" />
+<SlaveDBInfo Host="192.168.3.53" port="1432" user="sa" pwd="54429" dbname="CustNew" type="sqlserver" SerailNo="0AEe" masterid="49"/>
+<SlaveDBInfo Host="192.168.0.8"  port="1433" user="sa" pwd="clientserver85310000" dbname="sarah" type="sqlserver2000" SerailNo="6621" masterID="49"/>
+<WarmingSendMailList Send="RepRobot@163.com" pwd="reprobot001">
 	<Mail>yifei.wang@163.com</Mail>
 </WarmingSendMailList>
 <RepTableList>  
-  <Table MasterTable="m3" SlaveTable="m22" KeyField="id,id2" heterogeneous="true"  mergedTable="true"> 
-    	<Field  MasterField="id" SlaveField="id" /> 
-    	<Field  MasterField="id2" SlaveField="id2" /> 
-      <Field  MasterField="name" SlaveField="name" /> 
-      <Field  MasterField="" SlaveField="pwd"  DefaultValue="''" /> 
-      <Field  MasterField="" SlaveField="uid"  DefaultType="cuid" /> 
-   </Table>
-    <Table  MasterTable="m4" SlaveTable="m22" KeyField="id,id2" heterogeneous="true"  mergedTable="true">
-      <Field  MasterField="id" SlaveField="id" /> 
-      <Field  MasterField="id2" SlaveField="id2" /> 
-      <Field  MasterField="pwd" SlaveField="pwd" /> 
-      <Field  MasterField="" SlaveField="name"  DefaultValue="''" /> 
-      <Field  MasterField="" SlaveField="uid"  DefaultType="cuid" /> 
-    </Table> 
+  <Table MasterTable="t" SlaveTable="t" KeyField="id"  mergedTable="true"> 
+  </Table> 
 </RepTableList>
-</Schnauzer>
--->
+</Schnauzer-->
+
+<!--?xml version="1.0" encoding="utf-8"?>
+<Schnauzer>
+<MasterDBInfo Host="192.168.12.7" port="3306" user="secrep" pwd="rep#EDC" dbname="graspsecurity" serverid="999"  DateFormat="E MMM dd HH:mm:ss z yyyy"/>
+<SlaveDBInfo Host="192.168.12.247"  port="1433" user="sa" pwd="sql2000" dbname="Custnew" type="sqlserver2000" SerailNo="6621" masterID="49"/>
+<WarmingSendMailList>
+    <Mail>yifei.wang@163.com</Mail> 
+</WarmingSendMailList>
+<RepTableList>  
+	<Table MasterTable="dog_assinfo" SlaveTable="sec_dog_assinfo" KeyField="id" heterogeneous="true" mergedTable="True">
+    <Field  MasterField="id" SlaveField="id" />
+		<Field  MasterField="dognumber" SlaveField="dognumber" />
+		<Field  MasterField="moduleid" SlaveField="moduleid" />
+		<Field  MasterField="modulecode" SlaveField="modulecode" />
+		<Field  MasterField="ptypeid" SlaveField="ptypeid" />
+		<Field  MasterField="state" SlaveField="state" />
+		<Field  MasterField="usercount" SlaveField="usercount" />
+		<Field  MasterField="accountcount" SlaveField="accountcount" />
+		<Field  MasterField="salebtypeid" SlaveField="salebtypeid" />
+		<Field  MasterField="returnbtypeid" SlaveField="returnbtypeid" />
+		<Field  MasterField="saleprice" SlaveField="saleprice" />
+		<Field  MasterField="returnprice" SlaveField="returnprice" />
+		<Field  MasterField="saledate" SlaveField="saledate" />
+		<Field  MasterField="returndate" SlaveField="returndate" />
+	</Table>
+	<Table MasterTable="agent" SlaveTable="sec_agent_assinfo" KeyField="ulongid" heterogeneous="true" mergedTable="True">
+		<Field  MasterField="ulongid" SlaveField="id" />
+		<Field  MasterField="contractno" SlaveField="certno" />
+		<Field  MasterField="areaid" SlaveField="areaid" />
+	</Table>
+</RepTableList>
+</Schnauzer-->

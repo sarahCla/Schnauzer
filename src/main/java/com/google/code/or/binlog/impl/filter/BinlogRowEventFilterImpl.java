@@ -16,6 +16,7 @@
  */
 package com.google.code.or.binlog.impl.filter;
 
+import org.apache.commons.lang.exception.NestableRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +55,7 @@ public class BinlogRowEventFilterImpl implements BinlogRowEventFilter {
 		if(event == null) {
 			if(isVerbose() && LOGGER.isWarnEnabled()) {
 				LOGGER.warn("failed to find TableMapEvent, header: {}", header);
+				throw new NestableRuntimeException("noTableMapEvent");
 			}
 			return false;
 		}

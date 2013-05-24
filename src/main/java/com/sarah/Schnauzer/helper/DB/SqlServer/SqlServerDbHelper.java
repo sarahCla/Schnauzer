@@ -49,10 +49,10 @@ public class SqlServerDbHelper extends AbstractDbHelper {
 
 	@Override
 	public boolean excuteSqlByTransaction(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
-        if(null == sqlStr || sqlStr.length == 0)  
-        	return false;
+        if(null == sqlStr || sqlStr.length == 0) return false;
         boolean flag = true;
 		this.doOpen();
+		LOGGER.info("begin tran.... ");
         Statement stmt = null; 
         String[] sql = new String[sqlStr.length];
         int index = 0;
@@ -95,6 +95,7 @@ public class SqlServerDbHelper extends AbstractDbHelper {
             LOGGER.error("excuteSqlByTransaction Failed : {}",ex);
             errInfo[0] = ex.toString();
         }
+        LOGGER.info("....commit");
         return flag;
 	}
 

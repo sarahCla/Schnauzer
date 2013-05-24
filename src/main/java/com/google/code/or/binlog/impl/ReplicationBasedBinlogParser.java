@@ -32,6 +32,7 @@ import com.google.code.or.net.impl.TransportImpl;
 import com.google.code.or.net.impl.packet.EOFPacket;
 import com.google.code.or.net.impl.packet.ErrorPacket;
 import com.google.code.or.net.impl.packet.OKPacket;
+import com.sarah.tools.localinfo.LocalInfoGetter;
 
 /**
  * 
@@ -89,6 +90,7 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 	protected void doParse() throws Exception {
 		final XInputStream is = this.transport.getInputStream();
 		final Context context = new Context(this.binlogFileName);
+		LOGGER.info("PID=" + LocalInfoGetter.getPID());
 		while(isRunning()) {
 			try {
 				final int packetLength = is.readInt(3);
@@ -106,7 +108,7 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 					} else if((byte)packetMarker == EOFPacket.PACKET_MARKER) {
 						//final EOFPacket packet = EOFPacket.valueOf(packetLength, packetSequence, packetMarker, is);
 						running2.set(false);
-						LOGGER.info("========Get EOFPacket should retry==========");						
+						LOGGER.info("========Get EOFPacket should retry==========PID=" + LocalInfoGetter.getPID());						
 						//continue;
 						//throw new NestableRuntimeException(packet.toString());
 					} else {
@@ -141,7 +143,10 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 					throw new NestableRuntimeException("assertion failed, available: " + is.available() + ", event type: " + header.getEventType());
 				}
 			} catch (Exception e) {
-				LOGGER.error(e.toString());
+				LOGGER.error(e.toString() + "===PID=" + LocalInfoGetter.getPID());
+				if (e.getMessage().equalsIgnoreCase("noTableMapEvent")) {
+					throw new NestableRuntimeException("noTableMapEvent");
+				}
 				running2.set(false);
 				break;
 			} finally {
