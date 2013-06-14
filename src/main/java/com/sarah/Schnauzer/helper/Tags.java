@@ -27,10 +27,12 @@ public interface Tags {
 	String HeartBeat = "HeartBeat";
 	
 	String MailLists = "WarmingSendMailList";
+	String Mail = "Mail";
 	String MasterDB = "MasterDBInfo";
 	String SlaveDB = "SlaveDBInfo";
 	
 	String RDBRepTableList = "RepTableList";
+	String RDBRepTable = "Table";
 	String RedisRepTableList = "RedisRepTableList";
 	String RDBField = "RepTableList->Table->Field";
 	
@@ -43,8 +45,11 @@ public interface Tags {
 	String MySql = "MySql";
 	String binlog = "binlog";
 	String pos = "pos";
+	String TableMapPos = "masterdb";
 	String softname = "Schnauzer";
 	String repTable = "RepStatus";
+	String repTableComputerName = "ip";
+	String repTablePID = "port";
 	String version = "2.1.0.1";
 	String PublishDate = "2013-05-23-1";
 	

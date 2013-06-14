@@ -79,5 +79,4 @@ public interface Infos {
 	String StartReg = "开始注册master数据库[{}][{}]";
 	String Stopped = "======================....SCHNAUZER STOPPED==========================";
 	String Started = "=====================SCHNAUZER START TO RUN.......===================";
-	
 }

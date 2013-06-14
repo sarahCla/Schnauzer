@@ -145,6 +145,7 @@ public class ReplicationBasedBinlogParser extends AbstractBinlogParser {
 			} catch (Exception e) {
 				LOGGER.error(e.toString() + "===PID=" + LocalInfoGetter.getPID());
 				if (e.getMessage().equalsIgnoreCase("noTableMapEvent")) {
+					running2.set(false);
 					throw new NestableRuntimeException("noTableMapEvent");
 				}
 				running2.set(false);

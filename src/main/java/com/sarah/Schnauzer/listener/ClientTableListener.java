@@ -49,8 +49,10 @@ public class ClientTableListener implements BinlogEventListener {
 	{
 		if (slavedb.isRedis()) 
 			this.slave = new SchnauzerRedisMaster(masterdb, slavedb, args);
-		else
+		else 
+		{
 			this.slave = new SchnauzerRDBMaster(masterdb, slavedb);
+		}
 		helper.dateFormatStr = masterdb.DateFormat;
 	}
 	
@@ -61,10 +63,23 @@ public class ClientTableListener implements BinlogEventListener {
 		helper.databaseName = event.getDatabaseName().toString();
 		helper.position = event.getHeader().getNextPosition();
 		helper.tableMapPos = event.getHeader().getPosition();
-		//helper.binlogFileName = event.getHeader().get 
+	}
+
+	private void setHelper(ColumnTypeHelper helper, WriteRowsEvent event)
+	{
+		helper.position = event.getHeader().getPosition();
 	}
 	
+	private void setHelper(ColumnTypeHelper helper, DeleteRowsEvent event)
+	{
+		helper.position = event.getHeader().getPosition();
+	}
 
+	private void setHelper(ColumnTypeHelper helper, UpdateRowsEvent event)
+	{
+		helper.position = event.getHeader().getPosition();
+	}
+	
 	private void setHelper(ColumnTypeHelper helper, RotateEvent event)
 	{
 		helper.position = event.getBinlogPosition();
@@ -81,15 +96,18 @@ public class ClientTableListener implements BinlogEventListener {
 			setHelper(helper, (TableMapEvent)event);
 			break;
 		case MySQLConstants.WRITE_ROWS_EVENT:
+			setHelper(helper, (WriteRowsEvent)event);
 			if (!slave.doWrite(helper, (WriteRowsEvent)event)) {
 				LOGGER.info(Infos.Stopped);
 				System.exit(-1);
 			}
 			break;
 		case MySQLConstants.DELETE_ROWS_EVENT:
+			setHelper(helper, (DeleteRowsEvent)event);
     		slave.doDelete(helper, (DeleteRowsEvent)event);
 			break;
 		case MySQLConstants.UPDATE_ROWS_EVENT:
+			setHelper(helper, (UpdateRowsEvent)event);
     		if (!slave.doUpdate(helper,  (UpdateRowsEvent)event)) {
     			LOGGER.info(Infos.Stopped);
     			System.exit(-1);

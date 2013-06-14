@@ -67,9 +67,9 @@ public abstract class AbstractRDBMaster implements IMaster {
 	
 	public AbstractRDBMaster(DBConnectorConfig master, DBConnectorConfig slave)
 	{
-		this.slaveDb = slave;
-		this.masterDb = master;
-		this.dbhelper = new SlaveHelperFactory(slave); 
+		this.slaveDb    = slave;
+		this.masterDb   = master;
+		this.dbhelper   = new SlaveHelperFactory(slave); 
 		this.mailsender = new WarmingMailHelper("Config.xml");
 		registgerTableReplicator(master);
 	}
@@ -96,20 +96,41 @@ public abstract class AbstractRDBMaster implements IMaster {
 				"<br>Master database: " + this.masterDb.dbname + "<br>";
 		msg += Infos.CurPos + "<br>";
 		msg += "BinlogFile : " + this.slaveDb.binlog + "<br>";
+		msg += "TableMapPos : " + this.slaveDb.tablepos + "<br>";
 		msg += "Position : " + this.slaveDb.pos + "<br>";
 		return  msg;
 	}
 	
 	private String getStatusUpdateSql(ColumnTypeHelper helper) {
-		return "update RepStatus set pos=" + helper.position + " , binlog='" + this.getBinLogName(helper) + "' Where masterID=" + slaveDb.masterID;
+		return "update RepStatus set pos=" + helper.position + 
+				" , binlog='" + this.getBinLogName(helper) + 
+				"', masterdb='" + helper.tableMapPos + 
+				"' Where masterID=" + slaveDb.masterID;
 	}
 	
 	private String getAutoSetPosSql(ColumnTypeHelper helper) {
-		return "update RepStatus set pos=" + helper.tableMapPos + " , binlog='" + this.getBinLogName(helper) + "' where masterID=" + slaveDb.masterID;
+		return "update RepStatus set pos=" + helper.tableMapPos + 
+				" , binlog='" + this.getBinLogName(helper) +
+				"', masterdb='" + helper.tableMapPos +
+				"' where masterID=" + slaveDb.masterID;
+	}
+	
+	private String getCuid(RDBSchnauzer rep) {
+		String cuid = "";
+		if (rep.haveCUIDDefault()) {
+			cuid = CUID.getCuid(this.slaveDb.info);
+			if (rep.isCUIDDefaultText()) cuid = "'" + cuid + "'";
+		}
+		return cuid;
 	}
 	
 	private void autoSetPosition(ColumnTypeHelper helper) {
-		if ((System.currentTimeMillis()-lSysTime)<30000) return;
+
+		if ((System.currentTimeMillis()-lSysTime)<0) {
+			LOGGER.info("【System Datetime been changed!!!!!】");
+		}
+		if ((System.currentTimeMillis()-lSysTime)>0 && (System.currentTimeMillis()-lSysTime)<30000) return;
+		
 		String[] sqls = new String[1];
 		sqls[0] = getAutoSetPosSql(helper);
 		String[] errInfo = new String[1];
@@ -117,6 +138,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
+			this.slaveDb.tablepos = helper.tableMapPos;
 			LOGGER.info(Infos.AutoSetPos + Infos.OK + ":" + sqls[0]);
 		} else
 			LOGGER.error(Infos.AutoSetPos + Infos.Failed + ":" + sqls[0]);
@@ -132,16 +154,15 @@ public abstract class AbstractRDBMaster implements IMaster {
 		byte[] unsigntags = rep.getUnsignedTags();
 		String sqlValue = "";			
 		LOGGER.info(rows.size() + Infos.Row);
+		String cuid = "";
 		for (int j=0; j<rows.size(); j++)
 		{
 			Row row = rows.get(j);    			
 			List<Column> columns = row.getColumns();
 			if (!rep.needReplicate(columns)) continue;
 			if (!sqlValue.isEmpty()) sqlValue += ",";
-			if (rep.haveCUIDDefault())
-				sqlValue += "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + CUID.getCuid(this.slaveDb.info) + ")";
-			else
-				sqlValue += "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + ")";
+			cuid = getCuid(rep);
+			sqlValue += "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + cuid + ")";
 		}
 		if (sqlValue.isEmpty()) {
 			sql[0] = "";
@@ -183,14 +204,8 @@ public abstract class AbstractRDBMaster implements IMaster {
 			List<Column> columns = row.getColumns();
 			if (!rep.needReplicate(columns)) continue;
 			rowSql = sIfExistPre + getWhereStr(rep, columns, helper) + ")  ";
-			if (rep.haveCUIDDefault()) {
-				if (rep.isCUIDDefaultText())
-					rowSql += InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + "'" + CUID.getCuid(this.slaveDb.info) + "')";
-				else
-					rowSql += InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + CUID.getCuid(this.slaveDb.info) + ")";
-			}
-			else
-				rowSql += InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + ")";
+			String cuid = getCuid(rep);
+			rowSql += InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + cuid +")";
 			rowSql += " else ";
 			rowSql += updatePre + helper.getUpdataStr(columns, rep.getColumnNames(), unsigntags, rep.getFullFields()) +
 					" where " + getWhereStr(rep, columns, helper) + "   ";
@@ -209,20 +224,15 @@ public abstract class AbstractRDBMaster implements IMaster {
 		String rowSql = "";			
 		LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
+		String cuid = "";
 		for (int j=0; j<rows.size(); j++)
 		{
 			rowSql = "";
 			Row row = rows.get(j);    			
 			List<Column> columns = row.getColumns();
 			if (!rep.needReplicate(columns)) continue;
-			if (rep.haveCUIDDefault()) {
-				if (rep.isCUIDDefaultText())
-					rowSql += InsertSql +  " (" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + "'" + CUID.getCuid(this.slaveDb.info) + "')";
-				else
-					rowSql += InsertSql +  " (" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + CUID.getCuid(this.slaveDb.info) + ")";
-			}
-			else
-				rowSql += InsertSql +  "  (" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + ")";
+			cuid = getCuid(rep);
+			rowSql += InsertSql +  "  (" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + cuid + ")";
 			sql[index++] = rowSql;
 		} 
 		return sql;
@@ -238,16 +248,15 @@ public abstract class AbstractRDBMaster implements IMaster {
 		String rowSql = "";			
 		LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
+		String cuid = "";
 		for (int j=0; j<rows.size(); j++)
 		{
 			rowSql = "";
 			Row row = rows.get(j);    			
 			List<Column> columns = row.getColumns();
 			if (!rep.needReplicate(columns)) continue;
-			if (rep.haveCUIDDefault())
-				rowSql = InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + CUID.getCuid(this.slaveDb.info) + ")";
-			else
-				rowSql = InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + ")";
+			cuid = getCuid(rep);
+			rowSql = InsertSql +  "(" + helper.getValueStr(columns, bCol, unsigntags, rep.getFullFields()) + rep.getDefStr() + cuid + ")";
 			rowSql += "  ON duplicate KEY UPDATE " + helper.getUpdataStr(columns, rep.getColumnNames(), unsigntags, rep.getFullFields());
 			sql[index++] = rowSql;
 		}
@@ -281,7 +290,11 @@ public abstract class AbstractRDBMaster implements IMaster {
 	
 	private void rollBackToTableEvent(ColumnTypeHelper helper) {
 		String retInfo = "";
-		dbhelper.executeSql("update " + Tags.repTable + " set pos=" + helper.tableMapPos + " , binlog='" + this.getBinLogName(helper) + "' where masterID=" + slaveDb.masterID, retInfo);
+		dbhelper.executeSql(" update " + Tags.repTable + 
+				            " set pos=" + helper.tableMapPos + 
+				            ",masterdb='" + helper.tableMapPos +
+				            "', binlog='" + this.getBinLogName(helper) + 
+				            "' where masterID=" + slaveDb.masterID, retInfo);
 	}
 	
 	private void mailAndLog(String title, String context) {
@@ -337,6 +350,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
+			this.slaveDb.tablepos = helper.tableMapPos;
 			LOGGER.info(Infos.DoInsert + Infos.OK);
 			return true;
 		}
@@ -418,6 +432,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
+			this.slaveDb.tablepos = helper.tableMapPos;
 			LOGGER.info(Infos.DoUpdate + Infos.OK);
 			return true;
 		}
@@ -426,7 +441,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		mailAndLog(Infos.DoUpdate + Infos.Failed, sInfo);
 		this.slaveDb.errorMsg = "Update command faild";
 		HeartBeatInfo hinfo = new HeartBeatInfo();
-		ConfigGetHelper conf = new ConfigGetHelper();
+		ConfigGetHelper conf = new ConfigGetHelper(Integer.toString(this.slaveDb.masterID));
 		conf.getHeartBeatSet(hinfo);			
 		if (hinfo.port>0 && !hinfo.host.isEmpty()) {
 			LOGGER.info(Infos.SendErrorInfo);
@@ -479,6 +494,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		{
 			slaveDb.binlog = this.getBinLogName(helper);
 			slaveDb.pos = helper.position;
+			slaveDb.tablepos = helper.tableMapPos;
 			LOGGER.info(Infos.DoDelete + Infos.OK);
 			return true;
 		}

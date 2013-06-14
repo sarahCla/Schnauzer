@@ -27,8 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.listener.SocketGuard;
-import com.google.code.or.logging.Log4jInitializer;
 import com.sarah.tools.localinfo.*;
+import com.sarah.tools.logging.Log4jInitializer;
+import com.sarah.tools.logging.SetLogUtils;
 import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.heartbeat.HeartBeatSender;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
@@ -47,7 +48,7 @@ import com.sarah.Schnauzer.listener.ClientTableListener;
 public class SchnauzerRunner {
 	//
 	private static final Logger LOGGER = LoggerFactory.getLogger(SchnauzerRunner.class);
-	
+	public static String SchnauzerID = "1";
 
 	
 	private static boolean iniRepStatus(DBConnectorConfig masterConfig, DBConnectorConfig slaveConfig) throws Exception {
@@ -58,6 +59,7 @@ public class SchnauzerRunner {
 		masterConfig.pos = rsSlave.pos;
 		slaveConfig.binlog = rsSlave.binlog;
 		slaveConfig.pos = rsSlave.pos;
+		
 		LOGGER.info(Infos.GetRepStatus + Infos.OK);
 		return true;
 	}
@@ -83,7 +85,7 @@ public class SchnauzerRunner {
 		try
 		{
 
-			ConfigGetHelper conf = new ConfigGetHelper();
+			ConfigGetHelper conf = new ConfigGetHelper(SchnauzerID);
 
 			if (!conf.getDBConfig(masterConfig, Tags.MasterDB)) System.exit(-1);
 			if (!conf.getDBConfig(slaveConfig, Tags.SlaveDB))  System.exit(-1);
@@ -130,7 +132,13 @@ public class SchnauzerRunner {
 	 * 
 	 */
 	public static void main(String args[]) throws Exception {
-		Log4jInitializer.initialize("log4j.xml");		
+		if (args.length>0) {
+			SchnauzerID = args[0].trim();
+		}
+		System.out.println("Hi, pretty dog, your ID is " + SchnauzerID);
+		SetLogUtils utils = new SetLogUtils();
+		utils.setlogpath("LOG.INFO", "logs-" + SchnauzerID);
+		Log4jInitializer.initialize("logs-" + SchnauzerID + ".xml");
 		LOGGER.info(Infos.Started);
 		LOGGER.info("[PublishedDate] " + Tags.PublishDate);
 		while (true) 

@@ -249,6 +249,11 @@ public abstract class AbstractBinlogParser implements BinlogParser {
 				doParse();
 			} catch (Exception e) {
 				//notifyOnException(e);
+				
+				if (e.getMessage().equalsIgnoreCase("noTableMapEvent")) {
+					throw new NestableRuntimeException("noTableMapEvent");
+				}
+				
 				LOGGER.info("failed to parse binlog " + e.toString());
 				WarmingMailHelper mailsender;	
 				try {

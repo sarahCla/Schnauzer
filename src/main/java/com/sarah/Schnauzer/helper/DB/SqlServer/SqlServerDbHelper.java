@@ -51,6 +51,7 @@ public class SqlServerDbHelper extends AbstractDbHelper {
 	public boolean excuteSqlByTransaction(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
         if(null == sqlStr || sqlStr.length == 0) return false;
         boolean flag = true;
+        LOGGER.info("doOpen...");
 		this.doOpen();
 		LOGGER.info("begin tran.... ");
         Statement stmt = null; 
@@ -73,6 +74,7 @@ public class SqlServerDbHelper extends AbstractDbHelper {
 	                if ((res[i]<=0) && (res[i]!=-2))
 	                {
 	                	errInfo[0] = "下面的语句没有找到对应记录: " + sql[i];  
+	                	LOGGER.error(errInfo[0]);
 	                    stmt.executeUpdate("ROLLBACK;");  
 	                    return false;
 	                }

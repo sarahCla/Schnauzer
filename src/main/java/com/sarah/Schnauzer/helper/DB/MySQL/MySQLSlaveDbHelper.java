@@ -28,6 +28,7 @@ import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.helper.DB.AbstractDbHelper;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.SlaveStatus;
+import com.sarah.tools.localinfo.LocalInfoGetter;
 
 /**
  * 
@@ -48,8 +49,11 @@ public class MySQLSlaveDbHelper extends MySQLDbHelper implements ISlaveDbHelper 
 		try {
 			rt.next();
 			if (rt.getRow()>=1) {
-				result = new SlaveStatus(rt.getString(Tags.binlog), rt.getInt(Tags.pos), conConfig.masterID);
+				result = new SlaveStatus(rt.getString(Tags.binlog), rt.getInt(Tags.TableMapPos), conConfig.masterID);
 			} 
+			String retInfo = "";
+			this.executeSql("update " + Tags.repTable + " Set " + Tags.repTableComputerName + "='" + LocalInfoGetter.getComputerName() 
+			         + "', " + Tags.repTablePID + "='" + LocalInfoGetter.getPID() + "' Where masterID=" + this.conConfig.masterID , retInfo);
 		}catch(SQLException e) {
 			ErrorHelper.errExit(String.format(Infos.NoMasterRecord, conConfig.masterID, Tags.repTable));
 		}

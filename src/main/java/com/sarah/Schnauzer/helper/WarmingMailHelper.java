@@ -10,6 +10,7 @@ import javax.mail.internet.AddressException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sarah.SchnauzerRunner;
 import com.sarah.tools.email.SimpleMailSender;
 
 
@@ -50,7 +51,7 @@ public class WarmingMailHelper {
 			LOGGER.info("没有配置报警邮件");
 		} else
 		{
-			ConfigGetHelper helper = new ConfigGetHelper();
+			ConfigGetHelper helper = new ConfigGetHelper(SchnauzerRunner.SchnauzerID);
 			helper.getMailList(recipients, sender, senderpwd);
 		}
 	}

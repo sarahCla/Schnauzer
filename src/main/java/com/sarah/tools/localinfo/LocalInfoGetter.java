@@ -8,6 +8,9 @@ import java.io.InputStreamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * 
  * @author SarahCla
@@ -141,6 +144,16 @@ public class LocalInfoGetter{
 		return true;		
 	}
 	
+	public static String getComputerName() {
+		try{  
+			InetAddress netAddress = InetAddress.getLocalHost(); 
+			String name = netAddress.getHostName();
+			return name;
+        }catch(UnknownHostException e){  
+            System.out.println("unknown host!");  
+        }  		
+		return "";
+	}
 	
 	public static long getPID() {
 	    String processName =

@@ -21,13 +21,31 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.Attribute;
-import org.dom4j.io.SAXReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;  
+import java.io.FileOutputStream;  
+import java.io.IOException;  
+import java.io.PrintWriter;  
+  
+import javax.xml.parsers.DocumentBuilder;  
+import javax.xml.parsers.DocumentBuilderFactory;  
+
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;  
+import org.w3c.dom.NodeList;  
+import org.w3c.dom.Document;    
+import javax.xml.transform.OutputKeys;  
+import javax.xml.transform.Transformer;  
+import javax.xml.transform.TransformerException;  
+import javax.xml.transform.TransformerFactory;  
+import javax.xml.transform.dom.DOMSource;  
+import javax.xml.transform.stream.StreamResult;  
+  
 
 import com.sarah.Schnauzer.Attrs.*;
 import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
@@ -46,56 +64,77 @@ import com.sarah.tools.type.StrHelp;
 */
 public class ConfigGetHelper {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ConfigGetHelper.class);
+	private String SchnauzerID = "1";
 	
-	private Element getRootElem() {
-		Element root = null;
-		try {
-			File inputXml = new File(Tags.ConfigFile);
-			SAXReader saxReader = new SAXReader();
-			Document document = saxReader.read(inputXml);
-			root = document.getRootElement();
-		} catch (DocumentException e) {
-			LOGGER.error(Infos.OpenConfigFile + Infos.Failed + "：" + e.getMessage());
-			return null;
-		}		
-		return root;
+	public ConfigGetHelper(String id) {
+		this.SchnauzerID = id;
 	}
 	
-	private boolean isEqual(Attribute att, String name) {
-		return att.getName().trim().equalsIgnoreCase(name);
+	private boolean isXNode(Node node, String name) {
+		return (node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equalsIgnoreCase(name));
 	}
 	
-	private boolean isNotEqual(Attribute att, String name) {
-		return (!att.getName().trim().equalsIgnoreCase(name));
+    private Document load(String filename) {  
+        Document document = null;  
+        try {  
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
+            DocumentBuilder builder = factory.newDocumentBuilder();  
+            document = (Document)builder.parse(new File(filename));  
+            document.normalize();  
+        } catch (Exception ex) {  
+            ex.printStackTrace();  
+        }  
+        return document;  
+    }	
+	
+    private Node getMailNode() {
+        Document document = load(Tags.ConfigFile);  
+        Node root = document.getDocumentElement();  
+        NodeList secondNodes = root.getChildNodes();
+        for (int i=0; i<secondNodes.getLength(); i++) {
+        	Node secondNode = secondNodes.item(i);
+        	if (!isXNode(secondNode, Tags.MailLists)) continue;
+      		return secondNode;
+        }
+		return null;
+    }
+    
+	private Node getRootNode() {
+        Document document = load(Tags.ConfigFile);  
+        Node root = document.getDocumentElement();  
+        NodeList secondNodes = root.getChildNodes();
+        for (int i=0; i<secondNodes.getLength(); i++) {
+        	Node secondNode = secondNodes.item(i);
+        	if (!isXNode(secondNode, "Schnauzer")) continue;
+    		Node atr = secondNodes.item(i).getAttributes().getNamedItem("ID"); 
+        	if (atr!=null && atr.getTextContent().equalsIgnoreCase(SchnauzerID)) {
+        		return secondNode;
+        	}
+        }
+		return null;
+	}
+	
+	private String getAttr(NamedNodeMap alist, String attrName, String title) {
+		for(int i=0; i<alist.getLength(); i++) {
+			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
+				return alist.item(i).getNodeValue().trim();
+			}
+		}
+		ErrorHelper.errExit(title + Infos.Failed  + "：" + attrName + " not set");
+		return "";
 	}
 	
 	public boolean getMailList(List<String> recipients, List<String> SendMail, List<String> Mailpwd) {
 		try {
-			Element root = getRootElem();
-			recipients.clear();			
-			String value = "";
-			for(@SuppressWarnings("unchecked")
-			Iterator<Element> i=root.elementIterator(); i.hasNext();)
-			{
-				Element head = (Element)i.next();
-				if (!head.getName().equalsIgnoreCase(Tags.MailLists)) continue;
-				List<Attribute> attrList = head.attributes();
-				for (int n=0; n<attrList.size(); n++) 
-				{
-				    Attribute att = (Attribute)attrList.get(n);
-				    value = att.getValue().trim();
-				    if (isEqual(att, "Send"))  	SendMail.add(value);
-				    else if (isEqual(att, "pwd"))  Mailpwd.add(value);
-				    else  {
-				    	LOGGER.error(Tags.MailLists + Infos.IllegalAttr  + att.getName());
-				    	System.exit(-1);
-				    }
-				}				
-				for(Iterator<Element> j = head.elementIterator();j.hasNext();)
-				{
-					Element elem = (Element) j.next();
-					recipients.add(elem.getText());
-				}
+			Node root = getMailNode();
+			NamedNodeMap alist = root.getAttributes();
+			SendMail.add(getAttr(alist, "Sender", Infos.GetMailConf));
+			Mailpwd.add(getAttr(alist, "pwd", Infos.GetMailConf));
+			NodeList list = root.getChildNodes();
+			for(int i=0; i<list.getLength(); i++) {
+				Node node = list.item(i);
+				if (!isXNode(node, Tags.Mail)) continue;
+				recipients.add(node.getTextContent());
 			}
 		} catch (Exception e) {
 			LOGGER.error(Infos.GetMailConf + Infos.Failed + "：" + e.getMessage());
@@ -104,99 +143,92 @@ public class ConfigGetHelper {
 		LOGGER.info(Infos.MailRegist, recipients.size());
 		return true;
 	}	
-
+	
 	public boolean getHeartBeatSet(HeartBeatInfo info) {
 		try {
-			Element root = getRootElem();
-			String value = "";
-			for(Iterator i=root.elementIterator(); i.hasNext();)
-			{
-				Element head = (Element)i.next();
-				if (!StrHelp.TEqual(head.getName(), Tags.HeartBeat)) continue;
-				List<Attribute> attrList = head.attributes();
-				for (int n=0; n<attrList.size(); n++) 
-				{
-				    Attribute att = (Attribute)attrList.get(n);
-				    value = att.getValue().trim();
-				    if (isEqual(att, HeartBeatAttr.Host))    		info.host = value;
-				    else if (isEqual(att, HeartBeatAttr.Port))    	info.port = Integer.parseInt(value);
-				    else if (isEqual(att, HeartBeatAttr.Interval)) 	info.Interval = Long.parseLong(value);
-				    else  {
-				    	LOGGER.error(Tags.HeartBeat + Infos.IllegalAttr  + att.getName());
-				    	System.exit(-1);
-				    }
-				}				
+			Node root = getRootNode();
+			NodeList list = root.getChildNodes();
+			for(int i=0; i<list.getLength(); i++) {
+				Node node = list.item(i);
+				if (!isXNode(node, Tags.HeartBeat)) continue; 
+				NamedNodeMap alist = node.getAttributes();
+				info.host = getAttr(alist, HeartBeatAttr.Host, Infos.GetHeartBeatConf);
+				info.port = Integer.parseInt(getAttr(alist, HeartBeatAttr.Port, Infos.GetHeartBeatConf));
+				info.Interval = Long.parseLong(getAttr(alist, HeartBeatAttr.Interval, Infos.GetHeartBeatConf));
 				break;
-			}
+			}	
 			LOGGER.info(Infos.GetHeartBeatConf + Infos.OK);
 		} catch (Exception e) {
 			LOGGER.error(Infos.GetHeartBeatConf + Infos.Failed + ":" + e.getMessage());
 			return false;
 		}
 		return true;
-		
 	}
 	
 	public boolean getSlaveDBConfig(DBConnectorConfig dbConfig, String name) {
 		try {
-			Element root = getRootElem();
-			String value = "";
-			for(Iterator i=root.elementIterator(); i.hasNext();)
-			{
-				Element head = (Element)i.next();
-				if (!StrHelp.TEqual(head.getName(), name)) continue;
-				List<Attribute> attrList = head.attributes();
-				for (int n=0; n<attrList.size(); n++) 
-				{
-				    Attribute att = (Attribute)attrList.get(n);
-					value = att.getValue().trim();
-				    if (isEqual(att, SlaveDBAttr.Host))				    	dbConfig.host = value;
-				    else if (isEqual(att, SlaveDBAttr.Port))			   	dbConfig.port = Integer.parseInt(value);
-				    else if (isEqual(att, SlaveDBAttr.User))			   	dbConfig.user = value;
-				    else if (isEqual(att, SlaveDBAttr.Pwd))			    	dbConfig.pwd = value;
-				    else if (isEqual(att, SlaveDBAttr.DbName))		    	dbConfig.dbname = value;
-				    else if (isEqual(att, SlaveDBAttr.Type))               dbConfig.setType(value); 
-				    else if (isEqual(att, SlaveDBAttr.SerailNo)) {
-				    	if (!dbConfig.info.setSNStr(value))	return false;
-				    }
-				    else if (isEqual(att, SlaveDBAttr.WaitTime))		   	dbConfig.waittime = Integer.parseInt(value);
-				    else if (isEqual(att, SlaveDBAttr.MasterID))		   	dbConfig.masterID = Integer.parseInt(value);
-				    else  				
-				    	ErrorHelper.errExit(name + Infos.IllegalAttr + att.getName());
-				}				
+			Node root = getRootNode();
+			NodeList list = root.getChildNodes();
+			for(int i=0; i<list.getLength(); i++) {
+				Node node = list.item(i);
+				if (!isXNode(node, name)) continue; 
+				NamedNodeMap alist = node.getAttributes();
+				dbConfig.host   = getDBAttr(name, alist, SlaveDBAttr.Host);
+				dbConfig.port   = Integer.parseInt(getDBAttr(name, alist, SlaveDBAttr.Port));
+				dbConfig.user   = getDBAttr(name, alist, SlaveDBAttr.User);
+				dbConfig.pwd    = getDBAttr(name, alist, SlaveDBAttr.Pwd);
+				dbConfig.dbname = getDBAttr(name, alist, SlaveDBAttr.DbName);
+				dbConfig.setType(getDBAttr(name, alist, SlaveDBAttr.Type));
+				if (!dbConfig.info.setSNStr(getDBAttr(name, alist, SlaveDBAttr.SerailNo))) return false;
+				String value = getDAttr(alist, SlaveDBAttr.WaitTime);
+				if (value!="")
+					dbConfig.waittime = Integer.parseInt(value);
+				dbConfig.masterID = Integer.parseInt(SchnauzerID); //Integer.parseInt(getDBAttr(name, alist, SlaveDBAttr.MasterID));
 				break;
-			}			 
+			}
+			if (StrHelp.TEqual(name, Tags.MasterDB)) dbConfig.setType(Tags.MySql); 
 			LOGGER.info( Infos.GetDBConfigs + name + Infos.OK);
 		} catch (Exception e) {
 			LOGGER.error( Infos.GetDBConfigs + name + Infos.Failed + "：" + e.getMessage());
 			return false;
 		}
-		return true;
+		return true;	
+	}
+
+	private String getDAttr(NamedNodeMap alist, String attrName) {
+		for(int i=0; i<alist.getLength(); i++) {
+			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
+				return alist.item(i).getNodeValue();
+			}
+		}
+		return "";		
+	}
+	
+	private String getDBAttr(String name, NamedNodeMap alist, String attrName) {
+		for(int i=0; i<alist.getLength(); i++) {
+			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
+				return alist.item(i).getNodeValue();
+			}
+		}
+		ErrorHelper.errExit( Infos.GetDBConfigs + name + Infos.Failed + "：" + attrName + " not set");
+		return "";
 	}
 	
 	public boolean getMasterDBConfig(DBConnectorConfig dbConfig, String name) {
 		try {
-			Element root = getRootElem();
-			String value = "";
-			for(Iterator i=root.elementIterator(); i.hasNext();)
-			{
-				Element head = (Element)i.next();
-				if (!StrHelp.TEqual(head.getName(), name)) continue;
-				List<Attribute> attrList = head.attributes();
-				for (int n=0; n<attrList.size(); n++) 
-				{
-				    Attribute att = (Attribute)attrList.get(n);
-					value = att.getValue().trim();
-				    if (isEqual(att, MasterDBAttr.Host))				    	dbConfig.host = value;
-				    else if (isEqual(att, MasterDBAttr.Port))			    	dbConfig.port = Integer.parseInt(value);
-				    else if (isEqual(att, MasterDBAttr.User))			    	dbConfig.user = value;
-				    else if (isEqual(att, MasterDBAttr.Pwd))			    	dbConfig.pwd = value;
-				    else if (isEqual(att, MasterDBAttr.DbName))		    		dbConfig.dbname = value;
-				    else if (isEqual(att, MasterDBAttr.ServerID))		    	dbConfig.serverid = Integer.parseInt(value);
-				    else if (isEqual(att, MasterDBAttr.DateFormat))	    		dbConfig.DateFormat = value;
-				    else  				
-				    	ErrorHelper.errExit(name + Infos.IllegalAttr + att.getName());
-				}				
+			Node root = getRootNode();
+			NodeList list = root.getChildNodes();
+			for(int i=0; i<list.getLength(); i++) {
+				Node node = list.item(i);
+				if (!isXNode(node, name)) continue; 
+				NamedNodeMap alist = node.getAttributes();
+				dbConfig.host     = getDBAttr(name, alist, MasterDBAttr.Host);
+				dbConfig.port     = Integer.parseInt(getDBAttr(name, alist, MasterDBAttr.Port));
+				dbConfig.user     = getDBAttr(name, alist, MasterDBAttr.User);
+				dbConfig.pwd      = getDBAttr(name, alist, MasterDBAttr.Pwd);
+				dbConfig.dbname   = getDBAttr(name, alist, MasterDBAttr.DbName);
+				dbConfig.serverid = Integer.parseInt(SchnauzerID); //Integer.parseInt(getDBAttr(name, alist, MasterDBAttr.ServerID));
+				dbConfig.DateFormat = getDBAttr(name, alist, MasterDBAttr.DateFormat);
 				break;
 			}
 			if (StrHelp.TEqual(name, Tags.MasterDB)) dbConfig.setType(Tags.MySql); 
@@ -217,19 +249,20 @@ public class ConfigGetHelper {
 	
 	public boolean getRDBRepTables(List<ITableReplicator> tables) {
 		try {
-			Element root = getRootElem();
-			for(Iterator i=root.elementIterator(); i.hasNext();)
-			{
-				Element head = (Element)i.next();
-				if (!StrHelp.TEqual(head.getName(), Tags.RDBRepTableList)) continue;
-				for(Iterator j=head.elementIterator(); j.hasNext();)
-				{
-					Element elem = (Element) j.next();
+			Node root = getRootNode();
+			NodeList list = root.getChildNodes();
+			for(int i=0; i<list.getLength(); i++) {
+				Node node = list.item(i);
+				if (!isXNode(node, Tags.RDBRepTableList)) continue;
+				NodeList tnodes = node.getChildNodes();
+				for (int j=0; j<tnodes.getLength(); j++) {
+					Node tnode = tnodes.item(j);
+					if (!isXNode(tnode, Tags.RDBRepTable)) continue;
 					RDBSchnauzer table = new RDBSchnauzer();
 					tables.add(table);
-					getRDBRepTableAttr(table, elem.attributes());
+					getTableAttrs(table, tnode.getAttributes());
 					List<RepField> fields = table.getConfFields();
-					getRDBRepTableFields(table, elem, fields);
+					getRDBRepTableFields(table, tnode, fields);
 				}
 			}
 			LOGGER.info(Infos.GetTableConfigs + Infos.OK);
@@ -240,71 +273,53 @@ public class ConfigGetHelper {
 		return true;
 	}
 	
-	private void getRDBRepTableAttr(RDBSchnauzer table, List<Attribute> attrList) 
+	private void getTableAttrs(RDBSchnauzer table, NamedNodeMap attrs) 
 	{
-		String value = "";
-		for (int n=0; n<attrList.size(); n++) 
-		{
-		    Attribute att = (Attribute)attrList.get(n);
-		    value = att.getValue().trim();
-		    if (isEqual(att, RDBRepTableAttr.MasterTable))          table.setMasterTable(value);
-		    else if (isEqual(att, RDBRepTableAttr.SlaveTable)) 	    table.setSlaveTable(value);
-		    else if (isEqual(att, RDBRepTableAttr.KeyField))   	    table.setKeyFields(value);
-		    else if (isEqual(att, RDBRepTableAttr.CheckField)) 	    table.setCheckField(value);
-		    else if (isEqual(att, RDBRepTableAttr.NeedRepValue))   table.setNeedRepValue(value);
-		    else if (isEqual(att, RDBRepTableAttr.heterogeneous)) 	table.setHeterogeneous(value);
-		    else if (isEqual(att, RDBRepTableAttr.mergedTable))    	table.setMergedTable(value);
-		    else
-		    	ErrorHelper.errExit(Tags.RDBRepTableList + Infos.IllegalAttr + att.getName());
-		}
+		String title = Tags.RDBRepTable;
+		table.setMasterTable(getAttr(attrs, RDBRepTableAttr.MasterTable, title));
+		table.setSlaveTable(getAttr(attrs, RDBRepTableAttr.SlaveTable, title));
+		table.setKeyFields(getAttr(attrs, RDBRepTableAttr.KeyField, title));
+		table.setCheckField(getDAttr(attrs, RDBRepTableAttr.CheckField));
+		table.setNeedRepValue(getDAttr(attrs, RDBRepTableAttr.NeedRepValue));
+		table.setHeterogeneous(getAttr(attrs, RDBRepTableAttr.heterogeneous, title));
+		table.setMergedTable(getAttr(attrs, RDBRepTableAttr.mergedTable, title));
 	}
 	
-	private void getRDBRepTableFields(RDBSchnauzer table, Element elem, List<RepField> fields) {
-		String value = "";
-		for(Iterator f=elem.elementIterator(); f.hasNext();)
-		{
+	private void getRDBRepTableFields(RDBSchnauzer table, Node tnode, List<RepField> fields) {
+		NodeList fnodes = tnode.getChildNodes();
+		for(int i=0; i<fnodes.getLength(); i++) {
+			Node fnode = fnodes.item(i);
+			if (!isXNode(fnode, "Field")) continue;
 			RepField field = new RepField();
-			Element elemField = (Element)f.next();
-			List attrList2 = elemField.attributes();
-			for (int n1=0; n1<attrList2.size(); n1++) 
-			{
-			    Attribute att = (Attribute)attrList2.get(n1);
-			    value = att.getValue().trim();
-			    if (isEqual(att, RDBFieldAttr.MasterField))
-			    {
-			    	field.masterfield = value;
-			    	field.isNew = StrHelp.TEmpty(field.masterfield);
-			    }
-			    else if (isEqual(att, RDBFieldAttr.SlaveField))    	field.slavefield = value;
-			    else if (isEqual(att, RDBFieldAttr.DefaultValue))  	field.defvalue = value;
-			    else if (isEqual(att, RDBFieldAttr.DefaultType)) {
-			    	String type = value;
-			    	if (type.equalsIgnoreCase("CUID")) {
-			    		field.isCuidDefValue = true;
-			    		table.cuidDefault = true;
-			    	}
-			    }
-			    else
-			    	ErrorHelper.errExit(Tags.RDBField + Infos.IllegalAttr + att.getName());
-			}
-			fields.add(field);
+			NamedNodeMap attrs = fnode.getAttributes();
+			field.masterfield = getAttr(attrs, RDBFieldAttr.MasterField, Tags.RDBField);
+			field.isNew       = StrHelp.TEmpty(field.masterfield);
+			field.slavefield  = getAttr(attrs, RDBFieldAttr.SlaveField, Tags.RDBField);
+			field.defvalue    = getDAttr(attrs, RDBFieldAttr.DefaultValue);
+			String type = getDAttr(attrs, RDBFieldAttr.DefaultType);
+	    	if (type.equalsIgnoreCase("CUID")) {
+	    		field.isCuidDefValue = true;
+	    		table.cuidDefault = true;
+	    	}			
+	    	fields.add(field);
 		}
 	}
 	
 	public Boolean getRedisTables(List<RedisSchnauzer> tables) {
 		try {
-			Element root = getRootElem();
-			for(Iterator i=root.elementIterator(); i.hasNext();)
-			{
-				Element head = (Element)i.next();
-				if (!StrHelp.TEqual(head.getName(), Tags.RedisRepTableList)) continue;
-				for(Iterator j=head.elementIterator(); j.hasNext();)
-				{
-					Element elem = (Element) j.next();
+			Node root = getRootNode();
+			NodeList nodes = root.getChildNodes();
+			for(int i=0; i<nodes.getLength(); i++) {
+				Node node = nodes.item(i);
+				if (!isXNode(node, Tags.RedisRepTableList)) continue;
+				NodeList tnodes = node.getChildNodes();
+				for (int j=0; j<tnodes.getLength(); j++) {
+					Node tnode = tnodes.item(j);
+					if (!isXNode(node, "Table")) continue;
 					RedisSchnauzer table = new RedisSchnauzer();
 					tables.add(table);
-					getRedisTableAttr(table, elem.attributes());
-					getRedisTableFields(table, elem);
+					getRedisTableAttr(table, tnode.getAttributes());
+					getRedisTableFields(table, tnode);
 				}
 			}
 			LOGGER.info(Infos.GetTableConfigs + Infos.OK);
@@ -313,125 +328,70 @@ public class ConfigGetHelper {
 			return false;
 		}
 		return true;
-
 	}
 	
-	private void getRedisTableAttr(RedisSchnauzer table, List<Attribute> attrList) {
-		String value = "";
-		for (int n=0; n<attrList.size(); n++) 
-		{
-		    Attribute att = (Attribute)attrList.get(n);
-		    value = att.getValue().trim();
-		    if (isEqual(att, RedisRepTableAttr.MasterTable))        table.setMasterTable(value);
-		    else if (isEqual(att, RedisRepTableAttr.SlaveKey ))    table.setSlaveKey(value);
-		    else if (isEqual(att, RedisRepTableAttr.DataType))   	table.setDataType(value);
-		    else if (isEqual(att, RedisRepTableAttr.KeyField)) 	    table.setKeyFields(value);
-		    else if (isEqual(att, RedisRepTableAttr.SQL))          table.setSQL(value);
-		    else
-		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->Table" + Infos.IllegalAttr + att.getName());
-		}
+	private void getRedisTableAttr(RedisSchnauzer table, NamedNodeMap attrs) {
+		String title = Tags.RedisRepTableList + "->Table";
+		table.setMasterTable(getAttr(attrs, RedisRepTableAttr.MasterTable, title));
+		table.setSlaveKey(getAttr(attrs, RedisRepTableAttr.SlaveKey, title));
+		table.setDataType(getAttr(attrs, RedisRepTableAttr.DataType, title));
+		table.setKeyFields(getAttr(attrs, RedisRepTableAttr.KeyField, title));
+		table.setSQL(getAttr(attrs, RedisRepTableAttr.SQL, title));
 	}
 	
-	private void getCheckFields(Element elem, List<CheckField> ckfields) {
-		List attrs = elem.attributes();
+	private void getCheckField(Node node, List<CheckField> ckfields) {
+		NamedNodeMap attrs = node.getAttributes();
 		CheckField field = new CheckField();
-		String value = "";
-		for (int n1=0; n1<attrs.size(); n1++) 
-		{
-		    Attribute att = (Attribute)attrs.get(n1);
-		    value = att.getValue().trim();
-		    if (isEqual(att, RedisCheckFieldAttr.MasterField)) {
-		    	field.masterfield = value;
-		    } else if (isEqual(att, RedisCheckFieldAttr.Value)) {
-		    	field.setValue(value);
-		    } else if (isEqual(att, RedisCheckFieldAttr.Operator)) {
-		    	field.setOperator(value);
-		    } else {
-		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisCheckField + Infos.IllegalAttr + att.getName());
-		    }
-		}
+		String title = Tags.RedisRepTableList + "->" + Tags.RedisCheckField;
+		field.masterfield = getAttr(attrs, RedisCheckFieldAttr.MasterField, title);
+		field.setValue(getAttr(attrs, RedisCheckFieldAttr.Value, title));
+		field.setOperator(getAttr(attrs, RedisCheckFieldAttr.Operator, title));
 		ckfields.add(field);
 	}
+	
 
-	private void getValueField(Element elem, RedisSchnauzer table) {
-		List attrs = elem.attributes();
+	private void getValueField(Node node, RedisSchnauzer table) {
 		if (table.vlfield!=null)
 			ErrorHelper.errExit("Redis Table " + table.getMasterTableName() + " already have a ValueField ");
 		table.vlfield = new ValueField();
-		String value = "";
-		for (int n1=0; n1<attrs.size(); n1++) 
-		{
-		    Attribute att = (Attribute)attrs.get(n1);
-		    value = att.getValue().trim();
-		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
-		    	table.vlfield.masterfield = value;
-		    } else {
-		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisValueField + Infos.IllegalAttr + att.getName());
-		    }
-		}
+		NamedNodeMap attrs = node.getAttributes();
+		String title = Tags.RedisRepTableList + "->" + Tags.RedisValueField;
+		table.vlfield.masterfield = getAttr(attrs, RedisBaseFieldAttr.MasterField, title);
 	}
-
-	private void getMemberField(Element elem, RedisSchnauzer table) {
-		List attrs = elem.attributes();
+	
+	private void getMemberField(Node node, RedisSchnauzer table) {
 		if (table.memfield!=null)
 			ErrorHelper.errExit("Redis Table " + table.getMasterTableName() + " already have a MemberField ");
-		
 		table.memfield = new MemberField();
-		String value = "";
-		for (int n1=0; n1<attrs.size(); n1++) 
-		{
-		    Attribute att = (Attribute)attrs.get(n1);
-		    value = att.getValue().trim();
-		    if (isEqual(att, RedisBaseFieldAttr.MasterField)) {
-		    	table.memfield.masterfield = value;
-		    } else {
-		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisMemberField + Infos.IllegalAttr + att.getName());
-		    }
-		}
+		NamedNodeMap attrs = node.getAttributes();
+		String title = Tags.RedisRepTableList + "->" + Tags.RedisMemberField;
+		table.memfield.masterfield = getAttr(attrs, RedisBaseFieldAttr.MasterField, title);
 	}
 	
-	private void getScoreField(Element elem, RedisSchnauzer table) {
-		List attrs = elem.attributes();
+	private void getScoreField(Node node, RedisSchnauzer table) {
 		if (table.scorefield!=null)
 			ErrorHelper.errExit("Redis Table " + table.getMasterTableName() + " already have a ScoreField ");
-		
 		table.scorefield = new ScoreField();
-		String value = "";
-		for (int n1=0; n1<attrs.size(); n1++) 
-		{
-		    Attribute att = (Attribute)attrs.get(n1);
-		    value = att.getValue().trim();
-		    if (isEqual(att, RedisScoreFieldAttr.MasterField)) {
-		    	table.scorefield.masterfield = value;
-		    } else if (isEqual(att, RedisScoreFieldAttr.Multiplier)) {
-		    	table.scorefield.multiplier = Double.parseDouble(value);
-		    } else {
-		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisScoreField + Infos.IllegalAttr + att.getName());
-		    }
-		}
+		String title = Tags.RedisRepTableList + "->" + Tags.RedisScoreField;
+		NamedNodeMap attrs = node.getAttributes();
+		table.scorefield.masterfield = getAttr(attrs, RedisScoreFieldAttr.MasterField, title);
+		table.scorefield.multiplier = Double.parseDouble(getAttr(attrs, RedisScoreFieldAttr.Multiplier, title));
 	}
 	
-	private void getRedisTableFields(RedisSchnauzer table, Element elem) {
+	private void getRedisTableFields(RedisSchnauzer table, Node node) {
 		List<CheckField> ckfields = table.getCheckFields();
-		
-		String value = "";
-		String tag = "";
-		for(Iterator f=elem.elementIterator(); f.hasNext();)
-		{
-			Element elemField = (Element)f.next();
-			tag = elemField.getName();
-			if (StrHelp.TEqual(tag, Tags.RedisCheckField)) 
-				getCheckFields(elemField, ckfields);
-			else if (StrHelp.TEqual(tag, Tags.RedisMemberField))
-				getMemberField(elemField, table);
-			else if (StrHelp.TEqual(tag, Tags.RedisScoreField))
-				getScoreField(elemField, table);
-			else if (StrHelp.TEqual(tag, Tags.RedisValueField))
-				getValueField(elemField, table);
-		    else
-		    	ErrorHelper.errExit(Tags.RedisRepTableList + "->" + Tags.RedisTable + Infos.IllegalTag + tag);
+		NodeList fnodes = node.getChildNodes();
+		for(int i=0; i<fnodes.getLength(); i++) {
+			Node fnode = fnodes.item(i);
+			if (isXNode(fnode, Tags.RedisCheckField))
+				getCheckField(fnode, ckfields);
+			else if (isXNode(fnode, Tags.RedisMemberField))
+				getMemberField(fnode, table);
+			else if (isXNode(fnode, Tags.RedisScoreField))
+				getScoreField(fnode, table);
+			else if (isXNode(fnode, Tags.RedisValueField))
+				getValueField(fnode, table);
+				
 		}
 	}
-	
-	
 }

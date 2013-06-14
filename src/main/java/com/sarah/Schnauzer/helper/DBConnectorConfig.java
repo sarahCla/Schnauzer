@@ -35,6 +35,7 @@ public class DBConnectorConfig {
 	public int waittime = 28800;
 	
 	public long pos = 0;
+	public long tablepos = 0;
 	public String binlog = "";
 	public int serverid = 0;
 	public String[] fieldTag = new String[2];
@@ -53,17 +54,17 @@ public class DBConnectorConfig {
 		this.fieldTag[0] = "";
 		this.fieldTag[1] = "";
 		
-		if (StrHelp.equal(type, "MySql")) {
+		if (isMySQL()) {
 			this.driver = "";
 			this.fieldTag[0] = "`";
 			this.fieldTag[1] = "`";
 		}
-		else if (type.equalsIgnoreCase("SqlServer")) {
+		else if (isSQLSAfter2000()) {
 			this.driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 			this.fieldTag[0] = "[";
 			this.fieldTag[1] = "]";
 		}
-		else if (type.equalsIgnoreCase("SqlServer2000")) {
+		else if (isSQLServer2000()) {
 			this.driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
 			this.fieldTag[0] = "[";
 			this.fieldTag[1] = "]";
@@ -88,6 +89,10 @@ public class DBConnectorConfig {
 		return this.type.equalsIgnoreCase("sqlserver2000");
 	}
 	
+	public boolean isSQLSAfter2000() {
+		return this.type.equalsIgnoreCase("sqlserver");
+	}
+	
 	public LocalInfo info;
 	
 	public DBConnectorConfig() {
@@ -106,17 +111,17 @@ public class DBConnectorConfig {
 		this.pwd = pwd;
 		this.dbname = dbname;
 		this.type = type;
-		if (type.equalsIgnoreCase("MySql")) {
+		if (isMySQL()) {
 			this.driver = "";
 			this.fieldTag[0] = "`";
 			this.fieldTag[1] = "`";
 		}
-		else if (type.equalsIgnoreCase("SqlServer")) {
+		else if (isSQLSAfter2000()) {
 			this.driver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
 			this.fieldTag[0] = "[";
 			this.fieldTag[1] = "]";
 		}
-		else if (type.equalsIgnoreCase("SqlServer2000")) {
+		else if (isSQLServer2000()) {
 			this.driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
 			this.fieldTag[0] = "[";
 			this.fieldTag[1] = "]";
@@ -125,14 +130,14 @@ public class DBConnectorConfig {
 	}
 	
 	public String getURL() {
-		if (this.type.equalsIgnoreCase("SqlServer"))
+		if (isSQLSAfter2000())
 		{
 			return "jdbc:sqlserver://" + this.host + ":" + this.port + ";DatabaseName=" + this.dbname;
 		}
-		else if (this.type.equalsIgnoreCase("MySql")) {
+		else if (isMySQL()) {
 			return "jdbc:mysql://" + this.host + ":" + this.port + "/" + this.dbname + "?useUnicode=true&amp;autoReconnect=true";
 		}
-		else if (this.type.equalsIgnoreCase("SqlServer2000"))
+		else if (isSQLServer2000())
 		{
 			return "jdbc:microsoft:sqlserver://" + this.host + ":" + this.port + ";DatabaseName=" + this.dbname;
 		}

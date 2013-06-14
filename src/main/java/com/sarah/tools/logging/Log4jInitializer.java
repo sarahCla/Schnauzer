@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.code.or.logging;
+package com.sarah.tools.logging;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,7 +39,6 @@ public class Log4jInitializer {
 	}
 	
 	public static final void initialize(URL url) {
-		//
 		Object present = INITIALIZED_URLS.putIfAbsent(url.toString(), PRESENT);
 		if(present != null) {
 			return;
@@ -48,13 +47,11 @@ public class Log4jInitializer {
 	}
 	
 	public static final void initialize(String path) {
-		//
 		if(path.startsWith("file:")) {
 			initialize(toUrl(path));
 			return;
 		}
 		
-		//
 		Object present = INITIALIZED_URLS.putIfAbsent(path, PRESENT);
 		if(present != null) {
 			return;

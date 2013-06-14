@@ -23,6 +23,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sarah.SchnauzerRunner;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.helper.ErrorHelper;
@@ -82,7 +83,7 @@ public class SchnauzerRDBMaster extends AbstractRDBMaster implements IMaster {
 		try
 		{
 			this.tables.clear();
-			ConfigGetHelper conf = new ConfigGetHelper();
+			ConfigGetHelper conf = new ConfigGetHelper(SchnauzerRunner.SchnauzerID);
 			conf.getRDBRepTables(this.tables);
 			MasterDBHelper mdbhelper = new MasterDBHelper(master);
 			boolean pass = true;

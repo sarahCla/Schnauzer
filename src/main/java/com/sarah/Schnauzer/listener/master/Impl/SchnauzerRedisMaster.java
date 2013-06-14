@@ -30,6 +30,7 @@ import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
+import com.sarah.SchnauzerRunner;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.helper.ErrorHelper;
@@ -195,7 +196,7 @@ public class SchnauzerRedisMaster  implements IMaster {
 		try
 		{
 			tables.clear();
-			ConfigGetHelper conf = new ConfigGetHelper();
+			ConfigGetHelper conf = new ConfigGetHelper(SchnauzerRunner.SchnauzerID);
 			conf.getRedisTables(tables);
 			MasterDBHelper mdbhelper = new MasterDBHelper(master);
 			for (int i=0; i<this.tables.size(); i++)
