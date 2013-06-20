@@ -47,8 +47,8 @@ public class SqlServerDbHelper extends AbstractDbHelper {
 		return excuteSqlByTransaction(sqlStr, errInfo, true);
  	}
 
-	@Override
-	public boolean excuteSqlByTransaction(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
+	
+	private boolean executeByTran(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
         if(null == sqlStr || sqlStr.length == 0) return false;
         boolean flag = true;
         LOGGER.info("doOpen...");
@@ -99,6 +99,59 @@ public class SqlServerDbHelper extends AbstractDbHelper {
         }
         LOGGER.info("....commit");
         return flag;
+	}
+	
+	private boolean executeByTran2000(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
+        if(null == sqlStr || sqlStr.length == 0) return false;
+        boolean flag = true;
+        LOGGER.info("doOpen...");
+		this.doOpen();
+		LOGGER.info("opened... ");
+        Statement stmt = null; 
+        String[] sql = new String[sqlStr.length];
+        int index = 0;
+        try
+        {
+            stmt = conn.createStatement();
+            conn.setAutoCommit(false);
+            for(int i=0; i<sqlStr.length; i++)
+            {
+            	if ((sqlStr[i]==null) || (sqlStr[i].isEmpty())) continue;
+                stmt.addBatch(sqlStr[i]);
+                sql[index++] = sqlStr[i]; 
+            }
+            int[] res = stmt.executeBatch();
+            LOGGER.info("executeBatch ok ");
+            if (checkRowCount) {
+	            for(int i=0; i<res.length; i++)
+	            {
+	                if ((res[i]<=0) && (res[i]!=-2))
+	                {
+	                	errInfo[0] = "下面的语句没有找到对应记录: " + sql[i];  
+	                	LOGGER.error(errInfo[0]);
+	                    return false;
+	                }
+	            }
+            }
+            conn.commit();
+            LOGGER.info("commited...");
+        }
+        catch(Exception ex)
+        {
+            flag = false;
+            LOGGER.error("excuteSqlByTransaction Failed : {}",ex);
+            errInfo[0] = ex.toString();
+        }
+        LOGGER.info("executeByTran2000  end");
+        return flag;
+	}	
+	
+	@Override
+	public boolean excuteSqlByTransaction(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
+		if (conConfig.isSQLServer2000())
+			return executeByTran2000(sqlStr, errInfo, checkRowCount);
+		else
+			return executeByTran(sqlStr, errInfo, checkRowCount);
 	}
 
 }

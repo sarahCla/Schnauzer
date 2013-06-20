@@ -139,7 +139,7 @@ public class DBConnectorConfig {
 		}
 		else if (isSQLServer2000())
 		{
-			return "jdbc:microsoft:sqlserver://" + this.host + ":" + this.port + ";DatabaseName=" + this.dbname;
+			return "jdbc:microsoft:sqlserver://" + this.host + ":" + this.port + ";DatabaseName=" + this.dbname + ";selectMethod=cursor";
 		}
 		return "";
 	}
