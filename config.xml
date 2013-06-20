@@ -1,60 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Schnauzer>
-<MasterDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="roshall" serverid="99" />
-<SlaveDBInfo Host="192.168.3.53"  port="3306" user="root" pwd="09230808" dbname="test" type="mysql" SerailNo="6621" masterID="99"/>
-<WarmingSendMailList Send="RepRobot@163.com" pwd="reprobot001">
-    <Mail>yifei.wang@163.com</Mail> 
-</WarmingSendMailList>
-<RepTableList>  
-	<Table MasterTable="agent_bk" SlaveTable="agent_bk" KeyField="id">
-	</Table>
-</RepTableList>
-</Schnauzer>
-
-
-<!--?xml version="1.0" encoding="utf-8"?>
-<Schnauzer>
-<HeartBeat Host="192.168.12.162" port="60002" Interval="20000" />
-<MasterDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="test" serverid="21" />
-<SlaveDBInfo Host="192.168.3.53" port="1432" user="sa" pwd="54429" dbname="CustNew" type="sqlserver" SerailNo="0AEe" masterid="49"/>
-<SlaveDBInfo Host="192.168.0.8"  port="1433" user="sa" pwd="clientserver85310000" dbname="sarah" type="sqlserver2000" SerailNo="6621" masterID="49"/>
-<WarmingSendMailList Send="RepRobot@163.com" pwd="reprobot001">
-	<Mail>yifei.wang@163.com</Mail>
-</WarmingSendMailList>
-<RepTableList>  
-  <Table MasterTable="t" SlaveTable="t" KeyField="id"  mergedTable="true"> 
-  </Table> 
-</RepTableList>
-</Schnauzer-->
-
-<!--?xml version="1.0" encoding="utf-8"?>
-<Schnauzer>
-<MasterDBInfo Host="192.168.12.7" port="3306" user="secrep" pwd="rep#EDC" dbname="graspsecurity" serverid="999"  DateFormat="E MMM dd HH:mm:ss z yyyy"/>
-<SlaveDBInfo Host="192.168.12.247"  port="1433" user="sa" pwd="sql2000" dbname="Custnew" type="sqlserver2000" SerailNo="6621" masterID="49"/>
-<WarmingSendMailList>
-    <Mail>yifei.wang@163.com</Mail> 
-</WarmingSendMailList>
-<RepTableList>  
-	<Table MasterTable="dog_assinfo" SlaveTable="sec_dog_assinfo" KeyField="id" heterogeneous="true" mergedTable="True">
-    <Field  MasterField="id" SlaveField="id" />
-		<Field  MasterField="dognumber" SlaveField="dognumber" />
-		<Field  MasterField="moduleid" SlaveField="moduleid" />
-		<Field  MasterField="modulecode" SlaveField="modulecode" />
-		<Field  MasterField="ptypeid" SlaveField="ptypeid" />
-		<Field  MasterField="state" SlaveField="state" />
-		<Field  MasterField="usercount" SlaveField="usercount" />
-		<Field  MasterField="accountcount" SlaveField="accountcount" />
-		<Field  MasterField="salebtypeid" SlaveField="salebtypeid" />
-		<Field  MasterField="returnbtypeid" SlaveField="returnbtypeid" />
-		<Field  MasterField="saleprice" SlaveField="saleprice" />
-		<Field  MasterField="returnprice" SlaveField="returnprice" />
-		<Field  MasterField="saledate" SlaveField="saledate" />
-		<Field  MasterField="returndate" SlaveField="returndate" />
-	</Table>
-	<Table MasterTable="agent" SlaveTable="sec_agent_assinfo" KeyField="ulongid" heterogeneous="true" mergedTable="True">
-		<Field  MasterField="ulongid" SlaveField="id" />
-		<Field  MasterField="contractno" SlaveField="certno" />
-		<Field  MasterField="areaid" SlaveField="areaid" />
-	</Table>
-</RepTableList>
-</Schnauzer-->
+<!DOCTYPE Schnauzers>
+<Schnauzers>
+	<WarmingSendMailList Sender="RepRobot@163.com" pwd="reprobot001">
+	    <Mail>yifei.wang@163.com</Mail> 
+	</WarmingSendMailList>
+	<Schnauzer ID="35">
+	<HeartBeat Host="192.168.12.162" port="60002" Interval="20000" />
+	<MasterDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="test" serverid="21" DateFormat=""/>
+	<SlaveDBInfo Host="192.168.3.53" port="1432" user="sa" pwd="54429" dbname="CustNew" type="sqlserver" SerailNo="0AEe" masterid="49"/>
+	<SlaveDBInfo Host="192.168.0.8"  port="1433" user="sa" pwd="clientserver85310000" dbname="sarah" type="sqlserver2000" SerailNo="6621" masterID="49"/>
+	<RepTableList>  
+	  <Table MasterTable="t" SlaveTable="t" KeyField="id"  mergedTable="true"> 
+	  </Table> 
+	</RepTableList>
+	</Schnauzer>
+</Schnauzers>
