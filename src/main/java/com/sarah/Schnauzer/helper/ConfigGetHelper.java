@@ -52,6 +52,7 @@ import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.ITableReplicator;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RDBSchnauzer;
+import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.SASRDBSchnauzer;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.CheckField;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.MemberField;
 import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.ScoreField;
@@ -124,6 +125,26 @@ public class ConfigGetHelper {
 		return "";
 	}
 	
+	private String getDAttr(NamedNodeMap alist, String attrName) {
+		for(int i=0; i<alist.getLength(); i++) {
+			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
+				return alist.item(i).getNodeValue();
+			}
+		}
+		return "";		
+	}
+	
+	private String getDBAttr(String name, NamedNodeMap alist, String attrName) {
+		for(int i=0; i<alist.getLength(); i++) {
+			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
+				return alist.item(i).getNodeValue();
+			}
+		}
+		ErrorHelper.errExit( Infos.GetDBConfigs + name + Infos.Failed + "：" + attrName + " not set");
+		return "";
+	}
+	
+	
 	public boolean getMailList(List<String> recipients, List<String> SendMail, List<String> Mailpwd) {
 		try {
 			Node root = getMailNode();
@@ -195,25 +216,8 @@ public class ConfigGetHelper {
 		return true;	
 	}
 
-	private String getDAttr(NamedNodeMap alist, String attrName) {
-		for(int i=0; i<alist.getLength(); i++) {
-			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
-				return alist.item(i).getNodeValue();
-			}
-		}
-		return "";		
-	}
-	
-	private String getDBAttr(String name, NamedNodeMap alist, String attrName) {
-		for(int i=0; i<alist.getLength(); i++) {
-			if (alist.item(i).getNodeName().equalsIgnoreCase(attrName)) {
-				return alist.item(i).getNodeValue();
-			}
-		}
-		ErrorHelper.errExit( Infos.GetDBConfigs + name + Infos.Failed + "：" + attrName + " not set");
-		return "";
-	}
-	
+
+
 	public boolean getMasterDBConfig(DBConnectorConfig dbConfig, String name) {
 		try {
 			Node root = getRootNode();
@@ -229,6 +233,7 @@ public class ConfigGetHelper {
 				dbConfig.dbname   = getDBAttr(name, alist, MasterDBAttr.DbName);
 				dbConfig.serverid = Integer.parseInt(SchnauzerID); //Integer.parseInt(getDBAttr(name, alist, MasterDBAttr.ServerID));
 				dbConfig.DateFormat = getDBAttr(name, alist, MasterDBAttr.DateFormat);
+				dbConfig.SchnauzerClass = getDAttr(alist, MasterDBAttr.ClassName);
 				break;
 			}
 			if (StrHelp.TEqual(name, Tags.MasterDB)) dbConfig.setType(Tags.MySql); 
@@ -258,11 +263,21 @@ public class ConfigGetHelper {
 				for (int j=0; j<tnodes.getLength(); j++) {
 					Node tnode = tnodes.item(j);
 					if (!isXNode(tnode, Tags.RDBRepTable)) continue;
-					RDBSchnauzer table = new RDBSchnauzer();
-					tables.add(table);
-					getTableAttrs(table, tnode.getAttributes());
-					List<RepField> fields = table.getConfFields();
-					getRDBRepTableFields(table, tnode, fields);
+					if (getDAttr(tnode.getAttributes(), Tags.RepClass).equalsIgnoreCase(SASRDBSchnauzer.class.getSimpleName()))
+					{
+						SASRDBSchnauzer table = new SASRDBSchnauzer();
+						tables.add(table);
+						getTableAttrs(table, tnode.getAttributes());
+						List<RepField> fields = table.getConfFields();
+						getRDBRepTableFields(table, tnode, fields);
+					} else
+					{
+						RDBSchnauzer table = new RDBSchnauzer();
+						tables.add(table);
+						getTableAttrs(table, tnode.getAttributes());
+						List<RepField> fields = table.getConfFields();
+						getRDBRepTableFields(table, tnode, fields);
+					}
 				}
 			}
 			LOGGER.info(Infos.GetTableConfigs + Infos.OK);

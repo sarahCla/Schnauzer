@@ -39,6 +39,8 @@ public class DBConnectorConfig {
 	public String binlog = "";
 	public int serverid = 0;
 	public String[] fieldTag = new String[2];
+	
+	public String SchnauzerClass = "SchnauzerRDBMaster";
 
 	public String errorMsg = "";
 	

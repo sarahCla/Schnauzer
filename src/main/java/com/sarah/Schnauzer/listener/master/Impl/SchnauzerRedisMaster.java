@@ -441,4 +441,25 @@ public class SchnauzerRedisMaster  implements IMaster {
 		return true;
 	}
 
+
+	@Override
+	public boolean doBeforeWrite(ColumnTypeHelper helper, WriteRowsEvent event) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+
+	@Override
+	public boolean doBeforeUpdate(ColumnTypeHelper helper, UpdateRowsEvent event) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+
+	@Override
+	public boolean doBeforeDelete(ColumnTypeHelper helper, DeleteRowsEvent event) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 }

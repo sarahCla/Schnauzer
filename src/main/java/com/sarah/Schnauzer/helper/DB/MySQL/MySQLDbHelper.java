@@ -16,7 +16,7 @@ public class MySQLDbHelper extends AbstractDbHelper {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDbHelper.class);
 	
-
+	
 	public Boolean isClosed() throws SQLException {
 		return conn.isClosed() || (!conn.isValid(1000));
 	}
@@ -43,6 +43,51 @@ public class MySQLDbHelper extends AbstractDbHelper {
 	@Override
 	public boolean excuteSqlByTransaction(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
 		
+        if(null == sqlStr || sqlStr.length == 0) return false;
+        boolean flag = true;
+		this.doOpen();
+        try
+        {
+        	Statement stmt = conn.createStatement();
+        	conn.setAutoCommit(false);
+        	int nCount = 0;
+            if (checkRowCount) {
+	            int ret = 0;
+	            for(int i=0; i<sqlStr.length; i++)
+	            {
+	            	if ((sqlStr[i]==null) || (sqlStr[i].isEmpty())) continue;
+	                ret = stmt.executeUpdate(sqlStr[i]);
+	                if ((ret<=0) && (ret!=-2)) {
+	                	errInfo[0] = Infos.RecordNotFound + ":" + sqlStr[i];
+	                	conn.rollback();
+	                	return false;
+	                }
+	                 
+	            }
+            } else {            	
+	            for(int i=0; i<sqlStr.length; i++)
+	            {
+	            	if ((sqlStr[i]==null) || (sqlStr[i].isEmpty())) continue;
+	            	if (i<2) LOGGER.info(sqlStr[i]);
+	                stmt.execute(sqlStr[i]);
+	                nCount++;
+	            }
+            }
+            conn.commit();
+            LOGGER.info("执行语句：nCount=" + nCount);
+        }
+        catch(Exception ex)
+        {
+            LOGGER.error("excuteSqlByTransaction Failed : {}",ex);
+            errInfo[0] = ex.toString();
+            return false;
+        }
+        return flag;
+	}
+
+	/*
+	public boolean excuteSqlByTransaction(String[] sqlStr, String[] errInfo, boolean checkRowCount) {
+		
         if(null == sqlStr || sqlStr.length == 0)  
         	return false;
         boolean flag = true;
@@ -51,10 +96,8 @@ public class MySQLDbHelper extends AbstractDbHelper {
         
         try
         {
-            stmt = conn.createStatement();
+        	stmt = conn.createStatement();
             stmt.executeUpdate("SET AUTOCOMMIT=0;");
-            //stmt.executeUpdate("SET session character_set_client = utf8;");            
-            //stmt.executeUpdate("SET session character_set_connection = gbk;");
             stmt.executeUpdate("START TRANSACTION;");
             String[] sql = new String[sqlStr.length];
             int index = 0;
@@ -71,13 +114,12 @@ public class MySQLDbHelper extends AbstractDbHelper {
 	                if ((res[i]<=0) && (res[i]!=-2))
 	                {
 	                	errInfo[0] = Infos.RecordNotFound + ":" + sql[i];  
-	                    stmt.executeUpdate("ROLLBACK;");  
+	                    //stmt.executeUpdate("ROLLBACK;");  
 	                    return false;
 	                }
 	            }
             }
-            if (flag)       
-            	stmt.executeUpdate("COMMIT;"); 
+            if (flag) stmt.executeUpdate("COMMIT;"); 
         }
         catch(Exception ex)
         {
@@ -103,5 +145,5 @@ public class MySQLDbHelper extends AbstractDbHelper {
         }
         return flag;
 	}
-
+	 */
 }

@@ -46,16 +46,11 @@ public abstract class AbstractDbHelper implements IDbHelper {
 
 	@Override
 	public boolean doOpen() {
-		int waittime = conConfig.waittime;
-		if (waittime>10) waittime -= 3;
 		try {
-			if (!this.conConfig.driver.isEmpty()) 
-				Class.forName(this.conConfig.driver);
-			if ((conn!=null) && (!conn.isClosed())) {
-				if (conConfig.isSQLServer2000()) return true;
-				if (conn.isValid(waittime)) return true;
-				LOGGER.info(Infos.NeedRecon);
+			if (conn!=null) {
+				return true;
 			}
+			if (!this.conConfig.driver.isEmpty()) Class.forName(this.conConfig.driver);
 			conn = DriverManager.getConnection(conConfig.getURL(), conConfig.user, conConfig.pwd);
 			LOGGER.info(Infos.ConDB + ":" + this.conConfig.getURL());
 		} catch(Exception e) {   
@@ -65,6 +60,27 @@ public abstract class AbstractDbHelper implements IDbHelper {
 		return true;
 	}
 
+	/*
+	public boolean doOpen() {
+		int waittime = conConfig.waittime;
+		if (waittime>10) waittime -= 3;
+		try {
+			if ((conn!=null) && (!conn.isClosed())) {
+				if (conConfig.isSQLServer2000()) return true;
+				if (conn.isValid(waittime)) return true;
+				LOGGER.info(Infos.NeedRecon);
+			}
+			if (!this.conConfig.driver.isEmpty()) Class.forName(this.conConfig.driver);
+			conn = DriverManager.getConnection(conConfig.getURL(), conConfig.user, conConfig.pwd);
+			LOGGER.info(Infos.ConDB + ":" + this.conConfig.getURL());
+		} catch(Exception e) {   
+			LOGGER.error(Infos.ConDB + "[" + this.conConfig.getURL() + "]" + Infos.Failed + e.getMessage());
+			return false;
+		}   
+		return true;
+	}
+	 */
+	
 	@Override
 	public boolean executeSql(String sql, String retInfo) {
         if(sql.isEmpty()) return false;
@@ -74,6 +90,7 @@ public abstract class AbstractDbHelper implements IDbHelper {
         {
             stmt = conn.createStatement();
             stmt.execute(sql);
+            LOGGER.info(sql);
         }
         catch(Exception ex) {
             retInfo = ex.toString();
@@ -90,6 +107,7 @@ public abstract class AbstractDbHelper implements IDbHelper {
 			Statement statement;
 			statement = conn.createStatement();
 			rs = statement.executeQuery(sql);
+			LOGGER.info(sql);
 		} catch (Exception e) {
 			LOGGER.error( Infos.Get + Infos.DataSet + ":" + e.getMessage());
 		}

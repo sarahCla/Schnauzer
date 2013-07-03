@@ -29,6 +29,9 @@ import com.sarah.Schnauzer.listener.ColumnTypeHelper;
 public interface IMaster {
 	public boolean registgerTableReplicator(DBConnectorConfig master);
 	public boolean doWrite(ColumnTypeHelper helper, WriteRowsEvent event);
+	public boolean doBeforeWrite(ColumnTypeHelper helper, WriteRowsEvent event);
 	public boolean doUpdate(ColumnTypeHelper helper, UpdateRowsEvent event);
+	public boolean doBeforeUpdate(ColumnTypeHelper helper, UpdateRowsEvent event);
 	public boolean doDelete(ColumnTypeHelper helper, DeleteRowsEvent event);
+	public boolean doBeforeDelete(ColumnTypeHelper helper, DeleteRowsEvent event);
 }

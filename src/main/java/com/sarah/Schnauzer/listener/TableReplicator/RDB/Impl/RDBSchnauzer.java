@@ -27,6 +27,7 @@ import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.column.BitColumn;
 import com.sarah.Schnauzer.helper.ErrorHelper;
 import com.sarah.Schnauzer.helper.Infos;
+import com.sarah.Schnauzer.helper.Tags;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.ITableReplicator;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 
@@ -44,6 +45,7 @@ public class RDBSchnauzer implements ITableReplicator {
 	
 	public int checkFieldIndex = -1; 
 	
+	public String InsertFields = "";
 	
 	private String mastertable = "";
 	private String slavetable = "";
@@ -206,7 +208,7 @@ public class RDBSchnauzer implements ITableReplicator {
 	@Override
 	public boolean needReplicate(List<Column> columns) {
 		if (this.checkFieldIndex<0)	return true;
-		LOGGER.info(Infos.CheckValue + "=" + columns.get(this.checkFieldIndex).toString());
+		if (Tags.Verbose) LOGGER.info(Infos.CheckValue + "=" + columns.get(this.checkFieldIndex).toString());
 		return (columns.get(this.checkFieldIndex).toString().equalsIgnoreCase(this.needrepvalue));
 	}
 
@@ -223,6 +225,7 @@ public class RDBSchnauzer implements ITableReplicator {
 
 	@Override
 	public String getInsertFields(BitColumn bCol) {
+		if (!InsertFields.equalsIgnoreCase("")) return InsertFields;
 		String sql = "";
 		for(int i=0; i<bCol.getLength(); i++)
 		{
@@ -235,7 +238,8 @@ public class RDBSchnauzer implements ITableReplicator {
 		{
 			sql += "," + fnameTag[0] + this.fullfields.get(i).slavefield + fnameTag[1];
 		}
-		return "insert into " + this.slavetable + " (" + sql + " ) values ";
+		InsertFields = "insert into " + this.slavetable + " (" + sql + " ) values ";
+		return InsertFields;
 	}
 
 	@Override

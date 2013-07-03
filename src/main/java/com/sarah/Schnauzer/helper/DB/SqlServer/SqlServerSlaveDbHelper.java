@@ -33,9 +33,21 @@ public class SqlServerSlaveDbHelper extends SqlServerDbHelper implements ISlaveD
 	public SqlServerSlaveDbHelper(DBConnectorConfig dbConfig) {
 		super(dbConfig);
 	}
+	
+	private void repStatusUpdate() {
+		String retInfo = "";
+		executeSql("if not exists(select 1 from syscolumns where id=object_id('" + Tags.repTable + "') and name='" + Tags.TableMapPos + "') " +
+					" begin " +
+					"    EXEC sp_rename '" + Tags.repTable + ".[masterdb]', '" + Tags.TableMapPos + "', 'COLUMN'; " +
+					"    EXEC sp_rename '" + Tags.repTable + ".[ip]', '" + Tags.repTableComputerName + "', 'COLUMN'; " +
+					"    EXEC sp_rename '" + Tags.repTable + ".[port]', '" + Tags.repTablePID + "', 'COLUMN'; " +
+					" end", retInfo);	
+	}
+	
 
 	@Override
 	public SlaveStatus getSlaveStatus() {
+		repStatusUpdate();
 		SlaveStatus result = null;
 		ResultSet rt = getRS("select * from  " + Tags.repTable + " where masterID=" + this.conConfig.masterID); 
 		try {
@@ -44,8 +56,11 @@ public class SqlServerSlaveDbHelper extends SqlServerDbHelper implements ISlaveD
 				result = new SlaveStatus(rt.getString(Tags.binlog), rt.getInt(Tags.TableMapPos), conConfig.masterID);
 			} 
 			String retInfo = "";
-			this.executeSql("update " + Tags.repTable + " Set " + Tags.repTableComputerName + "='" + LocalInfoGetter.getComputerName() 
-					         + "', " + Tags.repTablePID + "='" + LocalInfoGetter.getPID() + "' Where masterID=" + this.conConfig.masterID , retInfo);
+			this.executeSql(" update " + Tags.repTable + 
+					        " Set " + Tags.repTableComputerName + "='" + LocalInfoGetter.getComputerName() + "', " + 
+					        		  Tags.repTablePID + "='" + LocalInfoGetter.getPID() + 
+					        "' Where masterID=" + this.conConfig.masterID , retInfo);
+			
 		}catch(SQLException e) {
 			return null;
 		}

@@ -60,7 +60,7 @@ public class SchnauzerRunner {
 		slaveConfig.binlog = rsSlave.binlog;
 		slaveConfig.pos = rsSlave.pos;
 		
-		LOGGER.info(Infos.GetRepStatus + Infos.OK);
+		LOGGER.info(Infos.GetRepStatus + Infos.OK + "  " + masterConfig.binlog + ":" + masterConfig.pos);
 		return true;
 	}
 	

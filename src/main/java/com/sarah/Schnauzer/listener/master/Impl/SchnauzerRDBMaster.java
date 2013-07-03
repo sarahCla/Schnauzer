@@ -23,6 +23,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
+import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
+import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.sarah.SchnauzerRunner;
 import com.sarah.Schnauzer.helper.ConfigGetHelper;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
@@ -31,6 +34,7 @@ import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.helper.DB.ISlaveDbHelper;
 import com.sarah.Schnauzer.helper.DB.MasterDBHelper;
 import com.sarah.Schnauzer.helper.DB.SlaveHelperFactory;
+import com.sarah.Schnauzer.listener.ColumnTypeHelper;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RepField;
 import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RDBSchnauzer;
 import com.sarah.Schnauzer.listener.master.AbstractRDBMaster;
@@ -143,6 +147,24 @@ public class SchnauzerRDBMaster extends AbstractRDBMaster implements IMaster {
 		} catch (Exception e) {
 			ErrorHelper.errExit(Infos.GetTableConfigs + Infos.Failed + e.toString());
 		}
+		return true;
+	}
+
+	@Override
+	public boolean doBeforeWrite(ColumnTypeHelper helper, WriteRowsEvent event) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean doBeforeUpdate(ColumnTypeHelper helper, UpdateRowsEvent event) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+	@Override
+	public boolean doBeforeDelete(ColumnTypeHelper helper, DeleteRowsEvent event) {
+		// TODO Auto-generated method stub
 		return true;
 	}
 

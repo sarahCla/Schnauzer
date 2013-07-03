@@ -42,8 +42,28 @@ public class MySQLSlaveDbHelper extends MySQLDbHelper implements ISlaveDbHelper 
 		super(dbConfig);
 	}
 
+	private void repStatusTableUpdate() {
+		ResultSet rt = getRS("show columns from " + Tags.repTable + " like '" + Tags.TableMapPos + "'");
+		try {
+			rt.next();
+			if (rt.getRow()>=1) {
+				rt.close();
+				return;
+			}
+			rt.close();
+			String retInfo = "";
+			executeSql("alter table " + Tags.repTable + " change column masterdb " + Tags.TableMapPos + " varchar(100); ", retInfo);
+			executeSql("alter table " + Tags.repTable + " change column ip " + Tags.repTableComputerName + " varchar(200); ", retInfo);
+			executeSql("alter table " + Tags.repTable + " change column port " + Tags.repTablePID + " int; ", retInfo);
+		}catch(SQLException e) {
+			ErrorHelper.errExit(String.format(Infos.NoMasterRecord, conConfig.masterID, Tags.repTable));
+		}
+					
+	}
+	
 	@Override
 	public SlaveStatus getSlaveStatus() throws Exception{
+		repStatusTableUpdate();
 		SlaveStatus result = null;
 		ResultSet rt = getRS("select * from  " + Tags.repTable + " where masterID=" + this.conConfig.masterID); 
 		try {
@@ -52,8 +72,14 @@ public class MySQLSlaveDbHelper extends MySQLDbHelper implements ISlaveDbHelper 
 				result = new SlaveStatus(rt.getString(Tags.binlog), rt.getInt(Tags.TableMapPos), conConfig.masterID);
 			} 
 			String retInfo = "";
-			this.executeSql("update " + Tags.repTable + " Set " + Tags.repTableComputerName + "='" + LocalInfoGetter.getComputerName() 
-			         + "', " + Tags.repTablePID + "='" + LocalInfoGetter.getPID() + "' Where masterID=" + this.conConfig.masterID , retInfo);
+			String sql =
+					" update " + Tags.repTable + 
+					" Set " + Tags.repTableComputerName + "='" + LocalInfoGetter.getComputerName() + "', " + 
+							  Tags.repTablePID + "='" + LocalInfoGetter.getPID() + 
+				  "' Where masterID=" + this.conConfig.masterID ;
+			
+			this.executeSql(sql, retInfo);
+			LOGGER.info(sql);
 		}catch(SQLException e) {
 			ErrorHelper.errExit(String.format(Infos.NoMasterRecord, conConfig.masterID, Tags.repTable));
 		}

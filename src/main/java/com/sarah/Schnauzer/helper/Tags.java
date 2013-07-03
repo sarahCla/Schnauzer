@@ -33,6 +33,8 @@ public interface Tags {
 	
 	String RDBRepTableList = "RepTableList";
 	String RDBRepTable = "Table";
+	String RepClass = "RepClass";
+	
 	String RedisRepTableList = "RedisRepTableList";
 	String RDBField = "RepTableList->Table->Field";
 	
@@ -45,12 +47,14 @@ public interface Tags {
 	String MySql = "MySql";
 	String binlog = "binlog";
 	String pos = "pos";
-	String TableMapPos = "masterdb";
+	String TableMapPos = "TablePos"; //"masterdb";
 	String softname = "Schnauzer";
 	String repTable = "RepStatus";
-	String repTableComputerName = "ip";
-	String repTablePID = "port";
-	String version = "2.1.0.1";
-	String PublishDate = "2013-05-23-1";
+	String repTableComputerName = "Runner"; //"ip";
+	String repTablePID = "RunnerPID"; //"port"; 
+	String version = "2.1.0.2";
+	String PublishDate = "2013-07-02-4";
+	
+	Boolean Verbose = false;
 	
 }

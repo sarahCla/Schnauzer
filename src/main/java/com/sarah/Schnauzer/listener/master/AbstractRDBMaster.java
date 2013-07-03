@@ -19,6 +19,8 @@ package com.sarah.Schnauzer.listener.master;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,7 @@ import com.sarah.Schnauzer.listener.TableReplicator.RDB.Impl.RDBSchnauzer;
 import com.sarah.tools.cuid.CUID;
 import com.sarah.tools.localinfo.LocalInfo;
 import com.sarah.tools.localinfo.LocalInfoGetter;
+import java.util.Timer;
 
 /**
  * 
@@ -60,8 +63,15 @@ public abstract class AbstractRDBMaster implements IMaster {
 	private ISlaveDbHelper dbhelper;
 	private WarmingMailHelper mailsender;	
 	
+	private String[] insertSql = new String[2500];
+	private int iSqlSize = 1;
+	
 	private long lSysTime = 0;
 	
+	private java.util.Timer InsertTimer;
+	private Boolean isDoing = false;
+	private Boolean isReSizing = false;
+	Lock lock = null;  
 	
 	protected List<ITableReplicator> tables = new CopyOnWriteArrayList<ITableReplicator>();
 	
@@ -72,6 +82,40 @@ public abstract class AbstractRDBMaster implements IMaster {
 		this.dbhelper   = new SlaveHelperFactory(slave); 
 		this.mailsender = new WarmingMailHelper("Config.xml");
 		registgerTableReplicator(master);
+		
+		lock = new ReentrantLock();  
+		
+		InsertTimer = new Timer(true);
+		InsertTimer.schedule(
+				new java.util.TimerTask() { 
+					public void run() {
+						if (isDoing) return;
+						String[] errInfo = new String[1];
+						if (iSqlSize<2 || System.currentTimeMillis()-lSysTime<1000) return;
+
+						isDoing = true;
+						
+						lock.lock();
+						
+						while (isReSizing) {};
+						
+						isReSizing = true;
+						String[] sqls = new String[iSqlSize];
+						for (int i=0; i<iSqlSize; i++) {
+							sqls[i] = insertSql[i];							
+						}
+						isReSizing = false;
+						
+						clearInsertSql();
+						lock.unlock();
+						
+						Boolean ret = dbhelper.excuteSqlByTransaction(sqls, errInfo, false);
+						lSysTime = System.currentTimeMillis(); 
+						
+						if (!ret) System.exit(-1);
+						isDoing = false;
+					} 
+				}, 0, 500);
 	}
 	
 	private String getBinLogName(ColumnTypeHelper helper) {
@@ -102,16 +146,18 @@ public abstract class AbstractRDBMaster implements IMaster {
 	}
 	
 	private String getStatusUpdateSql(ColumnTypeHelper helper) {
-		return "update RepStatus set pos=" + helper.position + 
+		return " update " + Tags.repTable + 
+				" set pos=" + helper.position + 
 				" , binlog='" + this.getBinLogName(helper) + 
-				"', masterdb='" + helper.tableMapPos + 
+				"', " + Tags.TableMapPos + "='" + helper.tableMapPos + 
 				"' Where masterID=" + slaveDb.masterID;
 	}
 	
 	private String getAutoSetPosSql(ColumnTypeHelper helper) {
-		return "update RepStatus set pos=" + helper.tableMapPos + 
+		return "update " + Tags.repTable + 
+				" set pos=" + helper.tableMapPos + 
 				" , binlog='" + this.getBinLogName(helper) +
-				"', masterdb='" + helper.tableMapPos +
+				"', " + Tags.TableMapPos + "='" + helper.tableMapPos +
 				"' where masterID=" + slaveDb.masterID;
 	}
 	
@@ -134,7 +180,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		String[] sqls = new String[1];
 		sqls[0] = getAutoSetPosSql(helper);
 		String[] errInfo = new String[1];
-		if (dbhelper.excuteSqlByTransaction(sqls, errInfo))
+		if (dbhelper.excuteSqlByTransaction(sqls, errInfo, false))
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
@@ -153,7 +199,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String sqlValue = "";			
-		LOGGER.info(rows.size() + Infos.Row);
+		if (Tags.Verbose) LOGGER.info(rows.size() + Infos.Row);
 		String cuid = "";
 		for (int j=0; j<rows.size(); j++)
 		{
@@ -195,7 +241,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String rowSql = "";			
-		LOGGER.info(rows.size() + Infos.Row);
+		if (Tags.Verbose) LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
 		for (int j=0; j<rows.size(); j++)
 		{
@@ -222,7 +268,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String rowSql = "";			
-		LOGGER.info(rows.size() + Infos.Row);
+		if (Tags.Verbose) LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
 		String cuid = "";
 		for (int j=0; j<rows.size(); j++)
@@ -246,7 +292,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		rep.setUsedColumn(bCol);
 		byte[] unsigntags = rep.getUnsignedTags();
 		String rowSql = "";			
-		LOGGER.info(rows.size() + Infos.Row);
+		if (Tags.Verbose) LOGGER.info(rows.size() + Infos.Row);
 		int index = 0;
 		String cuid = "";
 		for (int j=0; j<rows.size(); j++)
@@ -282,7 +328,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		if (sqls==null) return ret;
 		for (int i=0; i<sqls.length; i++) {
 			if ((sqls[i]==null) || (sqls[i].isEmpty())) continue;
-			LOGGER.info(sqls[i]);
+			if (Tags.Verbose) LOGGER.info(sqls[i]);
 			ret = true;
 		}
 		return ret;
@@ -292,7 +338,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		String retInfo = "";
 		dbhelper.executeSql(" update " + Tags.repTable + 
 				            " set pos=" + helper.tableMapPos + 
-				            ",masterdb='" + helper.tableMapPos +
+				            "," + Tags.TableMapPos + "='" + helper.tableMapPos +
 				            "', binlog='" + this.getBinLogName(helper) + 
 				            "' where masterID=" + slaveDb.masterID, retInfo);
 	}
@@ -311,12 +357,97 @@ public abstract class AbstractRDBMaster implements IMaster {
 		return (!s1.equalsIgnoreCase(s2));
 	}
 	
+	private void clearInsertSql() {
+		while(isReSizing) {};
+		isReSizing = true;
+		for (int j=0; j<insertSql.length; j++) insertSql[j] = "";
+		iSqlSize = 1;
+		isReSizing = false;
+	}
+	
+	private boolean doInsert(String sqls[], String[] errInfo) {
+		
+		//LOGGER.info("doInsert 1");
+		
+		lSysTime = System.currentTimeMillis();
+		
+		while (isReSizing) {};
+		
+		//LOGGER.info("doInsert 2");
+		
+		isReSizing = true;
+		for (int i=0; i<sqls.length; i++) {
+			if ((sqls[i]==null) || (sqls[i].isEmpty())) continue;
+			if (i==0)
+				insertSql[0] = sqls[0];
+			else
+				insertSql[iSqlSize++] = sqls[i];
+		}
+		isReSizing = false;
+		
+		if (iSqlSize>1000)
+		{
+			while (isReSizing) {};
+			isReSizing = true;
+			/*
+			StringBuilder b = new StringBuilder(); 
+			String[] s_ql = new String[2];
+			for (int i=0; i<iSqlSize; i++) {
+				if (i<1) {
+					s_ql[i] = insertSql[i];
+				} else {
+					if (i==1)
+						b.append(insertSql[i]);
+					else
+					{
+						int l = insertSql[i].indexOf(" values (");
+						//String s = insertSql[i].replaceAll("insert into ptype (`typeId`,`parTypeId`,`leveal`,`sonnum`,`soncount`,`CanModify`,`UserCode`,`p_barcode`,`p_bartype`,`barcode`,`FullName`,`Name`,`Standard`,`Type`,`Area`,`Unit1`,`Comment`,`deleted`,`RowIndex`,`id`,`parid`,`profileid`,`supplyInfo`,`preprice`,`preprice2`,`preprice3`,`preprice4`,`recPrice`,`recPrice1`,`recPriceBase`,`isStop`,`namePy`,`minPrice`,`prop1_enabled`,`prop2_enabled`,`prop3_enabled`,`taobao_cid`,`pic_url`,`createtype`,`technicalservicerate`,`feature1`,`feature2`,`feature3`,`modifiedTime` ) values", ",");
+						String s = ", " + insertSql[i].substring(l+8);
+						b.append(s);
+					}
+				}
+			}
+			s_ql[1] = b.toString();
+			*/
+			String[] s_ql = new String[iSqlSize];
+			for (int i=0; i<iSqlSize; i++) {
+				s_ql[i] = insertSql[i];
+			}
+			isReSizing = false;
+			
+			clearInsertSql();
+			
+			
+			
+			Boolean ret = dbhelper.excuteSqlByTransaction(s_ql, errInfo, false);
+
+			lSysTime = System.currentTimeMillis();			
+			
+			if (!ret) {
+				System.exit(-1);
+			}
+			return ret;
+		}
+		
+		return true;
+	}
 	
 	@Override
 	public boolean doWrite(ColumnTypeHelper helper, WriteRowsEvent event) {
+		
+		/*
+		if (helper.position<=120619669)
+			LOGGER.info("begin");
+		else if 	(helper.position>=123198439) {
+			LOGGER.info("end");
+			return true;
+		}
+		*/
+		
 		boolean doOne = false;
 		String[] sqls = null;
 		int index = 0;
+		doBeforeWrite(helper, event);
 		for (int i=0; i<tables.size(); i++)
 		{
 			ITableReplicator rep =  tables.get(i);
@@ -345,16 +476,15 @@ public abstract class AbstractRDBMaster implements IMaster {
 			return true;
 		}
 		
-		String[] errInfo = new String[1];			
-		if (dbhelper.excuteSqlByTransaction(sqls, errInfo))
+		String[] errInfo = new String[1];
+		if (doInsert(sqls, errInfo))
 		{
 			this.slaveDb.binlog = this.getBinLogName(helper);
 			this.slaveDb.pos = helper.position;
 			this.slaveDb.tablepos = helper.tableMapPos;
-			LOGGER.info(Infos.DoInsert + Infos.OK);
+			if (Tags.Verbose) LOGGER.info(Infos.DoInsert + Infos.OK);
 			return true;
 		}
-
 		String sInfo = getWarning(sqls, errInfo);
 		mailAndLog(Infos.DoInsert + Infos.Failed, sInfo);
 		rollBackToTableEvent(helper);
@@ -368,6 +498,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		boolean doOne = false;
 		String[] sqls = null;
 		int sqlsIndex = 0;
+		doBeforeUpdate(helper, event);
 		for (int i=0; i<tables.size(); i++)
 		{
 			RDBSchnauzer rep =  (RDBSchnauzer)tables.get(i);
@@ -459,6 +590,7 @@ public abstract class AbstractRDBMaster implements IMaster {
 		boolean need = false;
 		String[] sqls = null;
 		int index = 0;
+		doBeforeDelete(helper, event);
 		for (int i=0; i<tables.size(); i++)
 		{
 			RDBSchnauzer rep =  (RDBSchnauzer)tables.get(i);

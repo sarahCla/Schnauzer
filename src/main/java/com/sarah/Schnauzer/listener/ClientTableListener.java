@@ -33,6 +33,7 @@ import com.sarah.Schnauzer.helper.Infos;
 import com.sarah.Schnauzer.listener.master.IMaster;
 import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRDBMaster;
 import com.sarah.Schnauzer.listener.master.Impl.SchnauzerRedisMaster;
+import com.sarah.Schnauzer.listener.master.Impl.SchnauzerSASMaster;
 
 /**
  * 
@@ -49,10 +50,13 @@ public class ClientTableListener implements BinlogEventListener {
 	{
 		if (slavedb.isRedis()) 
 			this.slave = new SchnauzerRedisMaster(masterdb, slavedb, args);
-		else 
+		else if (masterdb.SchnauzerClass.equalsIgnoreCase("SchnauzerSASMaster"))
 		{
+			this.slave = new SchnauzerSASMaster(masterdb, slavedb);
+		} else {
 			this.slave = new SchnauzerRDBMaster(masterdb, slavedb);
 		}
+		
 		helper.dateFormatStr = masterdb.DateFormat;
 	}
 	

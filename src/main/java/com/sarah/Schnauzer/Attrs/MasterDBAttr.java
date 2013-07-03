@@ -8,4 +8,5 @@ public interface MasterDBAttr {
 	String DbName = "DbName";
 	String ServerID = "ServerId";
 	String DateFormat = "DateFormat";
+	String ClassName = "RepClass";
 }
