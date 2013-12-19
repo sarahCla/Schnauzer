@@ -17,12 +17,10 @@
 package com.sarah.Schnauzer.helper.DB.SqlServer;
 
 import java.sql.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sarah.Schnauzer.helper.DBConnectorConfig;
 import com.sarah.Schnauzer.helper.DB.AbstractDbHelper;
-import com.sarah.Schnauzer.helper.DB.MySQL.MySQLDbHelper;
 
 /**
  * 
@@ -30,7 +28,7 @@ import com.sarah.Schnauzer.helper.DB.MySQL.MySQLDbHelper;
  */
 public class SqlServerDbHelper extends AbstractDbHelper {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDbHelper.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SqlServerDbHelper.class);
 	
 	public SqlServerDbHelper(DBConnectorConfig dbConfig) {
 		super(dbConfig);

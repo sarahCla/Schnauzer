@@ -1,17 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE Schnauzers>
-<Schnauzers>
-	<WarmingSendMailList Sender="RepRobot@163.com" pwd="reprobot001">
+<Schnauzers >
+	<WarmingSendMailList Sender="RepRobot@163.com" pwd="">
 	    <Mail>yifei.wang@163.com</Mail> 
 	</WarmingSendMailList>
-	<Schnauzer ID="35">
-	<HeartBeat Host="192.168.12.162" port="60002" Interval="20000" />
-	<MasterDBInfo Host="192.168.3.53" port="3306" user="root" pwd="09230808" dbname="test" serverid="21" DateFormat=""/>
-	<SlaveDBInfo Host="192.168.3.53" port="1432" user="sa" pwd="54429" dbname="CustNew" type="sqlserver" SerailNo="0AEe" masterid="49"/>
-	<SlaveDBInfo Host="192.168.0.8"  port="1433" user="sa" pwd="clientserver85310000" dbname="sarah" type="sqlserver2000" SerailNo="6621" masterID="49"/>
-	<RepTableList>  
-	  <Table MasterTable="t" SlaveTable="t" KeyField="id"  mergedTable="true"> 
-	  </Table> 
-	</RepTableList>
+	<Schnauzer ID="61" Caption="base==行政">
+		<MasterDBInfo Host="192.168.12.7" port="3310" user="secrep" pwd=""  dbname="roshall" DateFormat="EEE MMM dd HH:mm:ss zzz yyyy"/>
+		<SlaveDBInfo Host="192.168.12.4"  port="3310" user="repservice" pwd=""  dbname="gadmin" type="mysql" SerailNo="87EE"/>
+		<RepTableList>
+			<Table MasterTable="employee" SlaveTable="bas_employee" KeyField="id"  heterogeneous="true" mergedTable="true">
+			    <Field  MasterField="typeId" SlaveField="typeId" />
+				<Field  MasterField="parTypeId" SlaveField="parTypeId" />
+				<Field  MasterField="leveal" SlaveField="leveal" />
+				<Field  MasterField="soncount" SlaveField="soncount" />
+				<Field  MasterField="sonnum" SlaveField="sonnum" />
+				<Field  MasterField="FullName" SlaveField="FullName" />
+				<Field  MasterField="Name" SlaveField="Name" />
+				<Field  MasterField="UserCode" SlaveField="UserCode" />
+				<Field  MasterField="Department" SlaveField="Department" />
+				<Field  MasterField="Tel" SlaveField="Tel" />
+				<Field  MasterField="Address" SlaveField="Address" />
+				<Field  MasterField="Comment" SlaveField="Comment" />
+				<Field  MasterField="deleted" SlaveField="deleted" />
+				<Field  MasterField="Pay" SlaveField="Pay" />
+				<Field  MasterField="Incumbency" SlaveField="Incumbency" />
+				<Field  MasterField="Birthday" SlaveField="Birthday" />
+				<Field  MasterField="EMail" SlaveField="EMail" />
+				<Field  MasterField="rowindex" SlaveField="rowindex" />
+				<Field  MasterField="id" SlaveField="id" />
+				<Field  MasterField="parid" SlaveField="parid" />
+				<Field  MasterField="profileid" SlaveField="profileid" />
+				<Field  MasterField="isStop" SlaveField="isStop" />
+				<Field  MasterField="namePy" SlaveField="namePy" />
+				<Field  MasterField="deptid" SlaveField="deptid" />
+				<Field  MasterField="sync" SlaveField="sync" />
+				<Field  MasterField="modifiedTime" SlaveField="modifiedTime" />
+			</Table>
+			<Table MasterTable="department" SlaveTable="bas_department" KeyField="id"  heterogeneous="true" mergedTable="true">
+				<Field  MasterField="typeId" SlaveField="typeId" />
+				<Field  MasterField="parTypeId" SlaveField="parTypeId" />
+				<Field  MasterField="leveal" SlaveField="leveal" />
+				<Field  MasterField="soncount" SlaveField="soncount" />
+				<Field  MasterField="sonnum" SlaveField="sonnum" />
+				<Field  MasterField="UserCode" SlaveField="UserCode" />
+				<Field  MasterField="FullName" SlaveField="FullName" />
+				<Field  MasterField="Name" SlaveField="Name" />
+				<Field  MasterField="Comment" SlaveField="Comment" />
+				<Field  MasterField="deleted" SlaveField="deleted" />
+				<Field  MasterField="RowIndex" SlaveField="RowIndex" />
+				<Field  MasterField="id" SlaveField="id" />
+				<Field  MasterField="parid" SlaveField="parid" />
+				<Field  MasterField="profileid" SlaveField="profileid" />
+				<Field  MasterField="namePy" SlaveField="namePy" />
+			</Table>
+		</RepTableList>
+	</Schnauzer>
+	<Schnauzer ID="1"  Caption="jxc">
+		<MasterDBInfo Host="192.168.103.152" port="3340" user="root" pwd="" dbname="cloud"  DateFormat="" RepClass="SchnauzerSASMaster"/>
+		<SlaveDBInfo Host="192.168.103.111"  port="3312" user="root" pwd="" dbname="slave1" type="MySQL" SerailNo="54EE" />
+		<RepTableList> 
+			<Table MasterTable="ptype" SlaveTable="ptype" KeyField="id" CheckField="profileid" heterogeneous="false" mergedTable="true" RepClass="SASRDBSchnauzer"/> 
+		</RepTableList>
+	</Schnauzer>
+	<Schnauzer ID="2"  Caption="crm" >
+		<MasterDBInfo Host="192.168.103.152" port="3340" user="root" pwd="" dbname="cloud"  DateFormat="" RepClass="SchnauzerSASMaster"/>
+		<SlaveDBInfo Host="192.168.12.13"  port="3307" user="root" pwd="" dbname="slave2" type="MySQL" SerailNo="54EE" />
+		<RepTableList> 
+			<Table MasterTable="ptype" SlaveTable="ptype" KeyField="id" CheckField="profileid" heterogeneous="false" mergedTable="true" RepClass="SASRDBSchnauzer"/> 
+		</RepTableList>
 	</Schnauzer>
 </Schnauzers>

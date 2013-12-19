@@ -17,35 +17,34 @@
 package com.sarah.Schnauzer.helper;
 
 import java.io.File;
-
-import java.util.Iterator;
 import java.util.List;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;  
-import java.io.FileOutputStream;  
-import java.io.IOException;  
-import java.io.PrintWriter;  
-  
-import javax.xml.parsers.DocumentBuilder;  
-import javax.xml.parsers.DocumentBuilderFactory;  
+
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;  
 import org.w3c.dom.NodeList;  
 import org.w3c.dom.Document;    
+
+/*
+import java.util.Iterator;
+import java.io.File;  
+import java.io.FileOutputStream;  
+import java.io.IOException;  
+import java.io.PrintWriter;  
+import javax.xml.parsers.DocumentBuilder;  
+import javax.xml.parsers.DocumentBuilderFactory;  
 import javax.xml.transform.OutputKeys;  
 import javax.xml.transform.Transformer;  
 import javax.xml.transform.TransformerException;  
 import javax.xml.transform.TransformerFactory;  
 import javax.xml.transform.dom.DOMSource;  
 import javax.xml.transform.stream.StreamResult;  
-  
+*/  
 
 import com.sarah.Schnauzer.Attrs.*;
 import com.sarah.Schnauzer.heartbeat.HeartBeatInfo;

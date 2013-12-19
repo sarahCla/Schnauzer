@@ -18,7 +18,6 @@ package com.sarah.Schnauzer.helper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sarah.Schnauzer.listener.TableReplicator.Redis.Fields.CheckField;
 
 /**
 * @author SarahCla
